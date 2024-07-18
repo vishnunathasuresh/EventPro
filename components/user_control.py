@@ -12,8 +12,8 @@ class Authenticator:
         self.usersdata = get_usersdata()
         self.auth = Authenticate(
             credentials={"usernames": self.usersdata},
-            cookie_expiry_days=1,
-            key="eventpro-auth",
+            cookie_expiry_days=COOKIE_EXPIRY_DAYS,
+            cookie_key="eventpro-auth",
             cookie_name="eventpro-auth"
         )
 

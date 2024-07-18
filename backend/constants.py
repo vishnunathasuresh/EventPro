@@ -100,3 +100,4 @@ DEFAULT_USERSDATA = {
     "student": {"name": "Student", "password": "student@eventpro", "user_type": "user"},
 }
 AVATARS = "😊🤩😄😎🐍🤔😌😑😇🥹🐱🦁🐯🐼🐨🐰🐭🦜🪽🦋🕊️🦚❄️🔥☄️🌛🌞⭐🌈⚡"
+COOKIE_EXPIRY_DAYS = 1
