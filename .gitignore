@@ -1,0 +1,8 @@
+.internals
+.venv
+databases
+Eventpro-final.code-workspace
+__pycache__/
+.vscode
+reports
+results
