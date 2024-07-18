@@ -82,18 +82,18 @@ def display_general_details_and_userinfo(current_database, saved_databases, user
             databasename = current_database.split(".")[0] if current_database is not None else ""
             st.write("🚀 Current Database : ", databasename)
             st.write("🚀 Saved Databases : ", " ; ".join(saved_databases))
-            f"🚀 The IP address : **{gethostbyname(gethostname())}:8501**"
+            st.write(f"🚀 The IP address : **{gethostbyname(gethostname())}:8501**")
     user_container = st.container(border=True)
     with user_container:
         st.subheader(
             "😉 User Info",
             divider=True
         )
-        f"**➡️ Username : {user_info['username'] }**"
-        f"**➡️ Name : {user_info['name'] }**"
-        f"**➡️ Role : {user_info['user_type'] }**"
-        f"**➡️ Handle : {user_info['handle'] }**"
-        f"**➡️ Avatar : {user_info['avatar'] }**" 
+        st.write(f"**➡️ Username : {user_info['username'] }**")
+        st.write(f"**➡️ Name : {user_info['name'] }**")
+        st.write(f"**➡️ Role : {user_info['user_type'] }**")
+        st.write(f"**➡️ Handle : {user_info['handle'] }**")
+        st.write(f"**➡️ Avatar : {user_info['avatar'] }**" )
 
 
 

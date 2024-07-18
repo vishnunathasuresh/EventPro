@@ -9,6 +9,7 @@ RESULTS_PATH = "./results/"
 CHAT_FILE = "chat.data"
 
 #vaiables
+CLASSES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "lkg", "ukg"]
 CLASS_TO_NUMBER = {
     "i": "1",
     "ii": "2",

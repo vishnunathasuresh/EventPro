@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
 
-def page_configuration(icon, title, autorefresh = False):
+def page_configuration(icon, title, autorefresh = False, refresh_interval_seconds = 3):
 	st.set_page_config(
 		page_icon=icon,
 		page_title=title,
@@ -13,4 +13,7 @@ def page_configuration(icon, title, autorefresh = False):
 		icon_image='./assets/icon-square-rounded-border.png'
 	)
 	if autorefresh:
-		cnt = st_autorefresh(interval=3000,)
+		cnt = st_autorefresh(
+			interval=refresh_interval_seconds * 1000,
+			debounce=True
+		)

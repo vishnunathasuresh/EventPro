@@ -1,8 +1,8 @@
 import streamlit as st
 from streamlit import session_state
-from backend import *
 from backend.constants import *
 from backend.database_reader import DatabaseFetch
+from backend.data_processing import add_to_session_state
 from components import *
 
 page_configuration(
@@ -11,28 +11,11 @@ page_configuration(
 )
 show_go_back_to_home_in_sidebar()
 
-fetch = DatabaseFetch()
-HOUSES = fetch.get_houses() + ["No House"]
-MAX_SELECTION_FOR_EVENTS = fetch.get_parameters()[-2]
-EVENTS = fetch.get_events()
 
-add_to_session_state(
-    admission_nos = fetch.get_all_admission_numbers(),
-    NAME = "",
-    class_number = "",
-    house = "",
-    division = "",
-    events_aldready_selected = None,
-    house_index = len(HOUSES) - 1,
-    admission_number = "",
-)
-ADMISSION_NOS = session_state.admission_nos
-
-
-# main function
 def main() -> None:
-    st.title("Participant Entry")
+    st.title("✒️ Participant Entry")
     st.divider()
+
     entry_column, event_column = st.columns([5, 7], gap="large")
 
     with entry_column:
@@ -77,32 +60,6 @@ def update_student_details():
             "The admission number entered is not present in the database.", icon="❌"
         )
 
-def fetch_student_details_from_admn_no():
-    admission_number = session_state["admission_number"]
-
-    with SQliteConnectCursor(get_current_database_path()) as cursor:
-        query = """
-        --sql
-        SELECT STUDENT_NAME, CLASS, DIVISION, HOUSE
-        FROM STUDENT
-        WHERE ADMISSION_NUMBER = ?
-        ;
-        """
-        cursor.execute(query, (admission_number,))
-        data = cursor.fetchone()
-        query = """
-        --sql
-        SELECT EVENT_NAME 
-        FROM PARTICIPANT 
-        WHERE ADMISSION_NUMBER = ?
-        ;
-        """
-        cursor.execute(query, (admission_number,))
-        events = [event[0] for event in cursor.fetchall()]
-        name, class_, division, house = data
-
-        return name, class_, division, house,events
-
 def show_student_details():
     st.subheader("Student info", divider=True)
     st.write("Admission number entered : ", session_state.admission_number)
@@ -145,6 +102,24 @@ def show_event_and_house_selection_content(admission_number_entered, event_colum
             events_selected=events_selected,
             event_column=event_column,
         )
+
+
+fetch = DatabaseFetch()
+HOUSES = fetch.get_houses() + ["No House"]
+MAX_SELECTION_FOR_EVENTS = fetch.get_parameters()[-2]
+EVENTS = fetch.get_events()
+
+add_to_session_state(
+    admission_nos = fetch.get_all_admission_numbers(),
+    NAME = "",
+    class_number = "",
+    house = "",
+    division = "",
+    events_aldready_selected = None,
+    house_index = len(HOUSES) - 1,
+    admission_number = "",
+)
+ADMISSION_NOS = session_state.admission_nos
 
 if __name__ == "__main__":
     main()

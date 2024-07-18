@@ -1,9 +1,7 @@
 import streamlit as st
 from streamlit import session_state
-from time import sleep
-from pandas import DataFrame, read_sql
-from backend.database_reader import DatabaseFetch,SQliteConnectConnection, SQliteConnectCursor
-from components.messages import show_success_message
+from backend.database_reader import DatabaseFetch, DatabaseFetchDataframe, SQliteConnectCursor
+from backend.submit_functions import update_student_details_to_student_table
 from components.navigation import show_go_back_to_home_in_sidebar
 from components.page_configuration_component import page_configuration
 
@@ -11,50 +9,10 @@ from components.page_configuration_component import page_configuration
 page_configuration("✏️","View & Edit Database")
 show_go_back_to_home_in_sidebar()
 
-USER_TYPE = session_state.user_info["user_type"]
-fetch = DatabaseFetch()
-
-
-ALL_ADMISSION_NUMBERS = fetch.get_all_admission_numbers()
-
-def get_student_df():
-    query = """
-    --sql
-    SELECT ADMISSION_NUMBER, STUDENT_NAME, CLASS, DIVISION, HOUSE, CATEGORY
-    FROM STUDENT
-    ORDER BY CLASS, DIVISION, STUDENT_NAME
-    ;
-    """
-    with SQliteConnectConnection() as conn:
-        df = read_sql(
-            query, conn
-        )
-
-    return df
-
-def get_participant_df():
-    query = """
-    --sql
-    SELECT STUDENT.ADMISSION_NUMBER, STUDENT_NAME, CLASS, DIVISION, HOUSE,CATEGORY, EVENT_NAME
-    FROM STUDENT, PARTICIPANT
-    WHERE STUDENT.ADMISSION_NUMBER = PARTICIPANT.ADMISSION_NUMBER
-    ORDER BY CLASS, DIVISION, STUDENT_NAME
-    ;
-    """
-    with SQliteConnectConnection() as conn:
-        df = read_sql(
-            query, conn
-        )
-
-    return df 
-
 
 def main()->None:
     st.title("🔍 View Current Participants")
     st.divider()
-
-    
-
 
     # student-database-view
     student_table_container = st.container(border=True)
@@ -64,7 +22,7 @@ def main()->None:
             divider=True
         )
 
-        student_dataframe = get_student_df()
+        student_dataframe = df_fetch.get_student_df()
         st.dataframe(
             data = student_dataframe,
             use_container_width=True,
@@ -76,7 +34,7 @@ def main()->None:
     
     with participant_table_container:
         st.subheader("🏃‍♂️ View Participants")
-        participant_dataframe = get_participant_df()
+        participant_dataframe = df_fetch.get_participant_df()
         st.dataframe(
             data = participant_dataframe,
             use_container_width=True,
@@ -129,7 +87,7 @@ def show_student_editor():
                 type="primary",
             )
             if submit_details:
-                update_student_details_to_database(
+                update_student_details_to_student_table(
                     selected_admission_number,
                     selected_name,
                     selected_class,
@@ -144,24 +102,7 @@ def show_student_editor():
                 icon="😑"
             )
         
-def update_student_details_to_database(admission_number, name, class_, division, house,category):
-    with SQliteConnectCursor() as cursor:
-        query = """
-        --sql
-        UPDATE STUDENT
-        SET STUDENT_NAME = ?,
-        CLASS = ?,
-        DIVISION = ?,
-        HOUSE = ?,
-        CATEGORY = ?
-        WHERE ADMISSION_NUMBER = ?
-        ;
-        """
-        data = (name, class_, division, house, category, admission_number)
-        cursor.execute(query, data)
-    show_success_message("Successfully updated!...", icon="✅")
-    sleep(2)
-    st.rerun()
+
 def get_name_class_division_house_from_admission_number(admission_number):
     with SQliteConnectCursor() as cursor:
         query = """
@@ -172,6 +113,7 @@ def get_name_class_division_house_from_admission_number(admission_number):
         """
         cursor.execute(query, (admission_number,))
         return cursor.fetchone()
+
 def get_class_category_dict_from_database():
 
     with SQliteConnectCursor() as cursor:
@@ -184,6 +126,11 @@ def get_class_category_dict_from_database():
         cursor.execute(query)
         return dict(cursor.fetchall())
 
+
+USER_TYPE = session_state.user_info["user_type"]
+fetch = DatabaseFetch()
+ALL_ADMISSION_NUMBERS = fetch.get_all_admission_numbers()
+df_fetch = DatabaseFetchDataframe()
 
 if __name__ == "__main__":
     main()

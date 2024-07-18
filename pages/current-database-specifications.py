@@ -1,14 +1,21 @@
-import streamlit as st 
+import streamlit as st
+from backend.database_reader import DatabaseFetch, DatabaseFetchDataframe
+from backend.file_operations import get_current_database_name
 from components.navigation import show_go_back_to_home_in_sidebar
 from components.page_configuration_component import page_configuration
-from pandas import read_sql
-from backend import *
 
 
-page_configuration("📄","Current Database Specifications", autorefresh=True)
+
+
+page_configuration(
+    icon="📄",
+    title="Current Database Specifications", 
+    autorefresh=True, 
+    refresh_interval_seconds=10
+)
 show_go_back_to_home_in_sidebar()
 
-fetch = DatabaseFetch()
+
 
 def main()-> None:
     st.title("Current Database Specifications")
@@ -20,7 +27,7 @@ def main()-> None:
 
 def show_database_updates():
     number_of_students = len(fetch.get_all_admission_numbers())
-    participants_number = update_participant_number()
+    participants_number = fetch.get_participant_number()
     st.subheader("Database Updates", divider=True)
     cola,colb = st.columns(2)
     with cola:
@@ -45,7 +52,7 @@ def show_parameter_info():
         number_of_judges, 
         min_marks_for_prize, 
         max_events 
-    ) = get_database_specs()
+    ) = fetch.get_database_specs()
     
 
     st.subheader(str(get_current_database_name()) + " Parameters",divider=True)
@@ -95,8 +102,8 @@ def show_parameter_info():
 
 def show_tables():
     available_events = {"Event name": fetch.get_events()}
-    grades = get_grade_table_from_database()
-    class_category_allocated_dataframe = get_class_cat_from_database()
+    grades = df_fetch.get_grade_marks_df()
+    class_category_allocated_dataframe = df_fetch.get_class_category_df()
 
     col7, col8 = st.columns(2)
 
@@ -111,47 +118,8 @@ def show_tables():
     st.subheader("Available events", divider=True)
     st.dataframe(data=available_events,use_container_width=True, hide_index=True)  
 
-def update_participant_number():
-    with SQliteConnectCursor(get_current_database_path()) as cursor:
-        cursor.execute("""
-        --sql
-        SELECT COUNT(DISTINCT ADMISSION_NUMBER) FROM PARTICIPANT
-        ;
-        """)
-        a = cursor.fetchone()[0]
-    return a
-
-def get_database_specs():
-    with SQliteConnectCursor() as cursor:
-        query = """
-        --sql
-        SELECT MAX_MARKS_FOR_EACH_JUDGE,
-        NUMBER_OF_JUDGES,
-        MIN_MARKS_FOR_PRIZE,
-        MAXIMUM_EVENTS_FOR_PARTICIPATION
-        FROM PARAMETER
-        ;
-        """
-        
-        cursor.execute(query)
-        tup1 = cursor.fetchone()
-    return tup1
-
-def get_class_cat_from_database():
-    with SQliteConnectConnection() as conn:
-        df = read_sql(
-            "SELECT * FROM CLASS_CATEGORY ",
-            con = conn, 
-        )
-    return df
-
-def get_grade_table_from_database():
-    with SQliteConnectConnection() as conn:
-        df = read_sql(
-            "SELECT * FROM GRADE_MARKS ",
-            con = conn, 
-        )
-    return df
+fetch = DatabaseFetch()
+df_fetch = DatabaseFetchDataframe()
 
 if __name__ == '__main__':
     main()

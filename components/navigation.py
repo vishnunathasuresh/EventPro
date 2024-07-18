@@ -187,3 +187,5 @@ def show_go_back_to_home_in_sidebar():
 				use_container_width=True
 			)
 
+def go_to_home_page():
+	st.switch_page("main.py")

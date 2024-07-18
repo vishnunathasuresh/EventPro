@@ -4,6 +4,7 @@ from pandas import DataFrame, read_sql
 from backend.database_reader import DatabaseFetch
 from backend.file_operations import get_current_database_path
 from backend.sqlite_connections import SQliteConnectConnection, SQliteConnectCursor
+from backend.submit_functions import push_judgement_to_participant_table
 from components.navigation import show_go_back_to_home_in_sidebar
 from components.page_configuration_component import page_configuration
 
@@ -39,7 +40,7 @@ def main()->None:
     st.session_state.orginal_df = fetch_data(category_selected, event_selected)
     if event_selected is not None:
         with table_container:
-            st.subheader(f"✏️ Marks Updation Sheet for :blue[{category_selected.title()} - {event_selected}]", divider=True)
+            st.subheader(f"✏️ Marks Updation Sheet for :blue[{str(category_selected).title()} - {event_selected}]", divider=True)
 
 
             edited_df = st.data_editor(
@@ -54,7 +55,7 @@ def main()->None:
             )
 
         with final_sheet_view_container:
-            st.subheader(f"📝 Final Judgement Sheet for :orange[{category_selected.title()} - {event_selected}]", divider=True)
+            st.subheader(f"📝 Final Judgement Sheet for :orange[{str(category_selected).title()} - {event_selected}]", divider=True)
             st.toggle(
                 "Consolidation prize Allowed",key="consolidation_allowed"
             )
@@ -83,11 +84,11 @@ def main()->None:
             )
 
             submit_judgement = st.button(
-                "Submit Changes", disabled=disabled_submit_judgement_condition, type="primary"
+                "Submit Changes", disabled=disabled_submit_judgement_condition, type="primary"# type:ignore
             )
 
             if submit_judgement:
-                push_to_database(processed_dataframe)
+                push_judgement_to_participant_table(processed_dataframe, JUDGELABELS)
         
 def get_column_info():
 
@@ -121,7 +122,7 @@ def get_column_info():
 
     }
 
-    admno_name_class_division_column_info.update(judges_column_info)
+    admno_name_class_division_column_info.update(judges_column_info) # type: ignore
     admno_name_class_division_column_info.update(total_grade_disqualifiedstatus_remarks_column_info)
     final_column_info = admno_name_class_division_column_info.copy()
     return final_column_info
@@ -160,11 +161,11 @@ def process_dataframe(dataframe:DataFrame):
     df["TOTAL_MARKS"] = df[columns_to_add].sum(axis=1)
     df["GRADE"] = df["TOTAL_MARKS"].apply(assign_grade)
     df['RANK'] = df['TOTAL_MARKS'].rank(method="dense", ascending=False)
-    df["RANK"] = df[["RANK", "DISQUALIFIED"]].apply(assign_rank, axis=1)
+    df["RANK"] = df[["RANK", "DISQUALIFIED"]].apply(assign_rank, axis=1) # type: ignore
     fn = lambda x: 'CONSOLIDATION' if (x['RANK'] is not None) and (x['TOTAL_MARKS'] < session_state.min_marks_for_prize) else x['RANK']
 
     df['RANK'] = df[['RANK', 'TOTAL_MARKS']].apply(
-        evaluate_rank, axis=1
+        evaluate_rank, axis=1 # type: ignore
     )
         
     df.sort_values(by='TOTAL_MARKS', ascending=False, inplace=False)
@@ -213,33 +214,7 @@ def fetch_data(category, event):
         )
     return data
 
-def push_to_database(df:DataFrame):
-    data = df.to_dict(orient="records")
-    with SQliteConnectCursor() as cursor:
-        query = """
-        --sql
-        UPDATE PARTICIPANT
-        SET TOTAL_MARKS = ?,
-        GRADE = ?,
-        RANK = ?,
-        DISQUALIFIED = ?,
-        REMARKS = ?
 
-        WHERE ADMISSION_NUMBER = ?
-        ;
-        """
-        
-        for rec in data:
-
-            cursor.execute(query, (rec["TOTAL_MARKS"], rec["GRADE"], rec["RANK"],rec["DISQUALIFIED"], rec["REMARKS"], rec["ADMISSION_NUMBER"]))
-            for judge in JUDGELABELS:
-                Q2 = F"""
-                --sql
-                UPDATE PARTICIPANT SET {judge} = ? WHERE ADMISSION_NUMBER = ?
-                ;
-                """
-                cursor.execute(Q2, (rec[judge], rec["ADMISSION_NUMBER"]))
-        st.toast("The data has been updated at the server", icon="✅")
 
 
 

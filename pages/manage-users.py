@@ -3,8 +3,7 @@ from streamlit import session_state,column_config
 from backend.constants import INTERNALS_PATH
 from backend.data_processing import is_any_dataframe_cell_empty
 from backend.file_operations import get_user_data_as_dataframe, push_edits_to_users_yaml
-from components.navigation import show_go_back_to_home_in_sidebar
-
+from components.navigation import show_go_back_to_home_in_sidebar, go_to_home_page
 from components.page_configuration_component import page_configuration
 
 
@@ -53,12 +52,11 @@ def main()-> None:
             submit_edits = st.button(
                 label="Submit Changes to the Database",
                 type="primary",
-                disabled=bool(is_any_dataframe_cell_empty(updated_user_data_dataframe))
-
+                disabled=False
             )
             if submit_edits:
                 push_edits_to_users_yaml(updated_user_data_dataframe)
-                st.switch_page("main.py")
+                go_to_home_page()
 
 
 if __name__ == '__main__':

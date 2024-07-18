@@ -9,10 +9,11 @@ page_configuration(
 
 show_go_back_to_home_in_sidebar()
 
+
 def main()-> None:
-    
     st.title(" 💻 About Me")
     st.divider()
+
     st.write(WORDS)
 
 

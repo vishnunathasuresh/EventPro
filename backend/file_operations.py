@@ -1,8 +1,11 @@
 from pandas import DataFrame
-from backend import *
+import streamlit as st
 from backend.constants import *
 import os
 import yaml
+from backend.data_processing import get_class_category_dict_from, process_grade_marks, process_student_data_from
+from backend.sqlite_connections import SQliteConnectCursor
+from components.messages import show_error_message, show_general_message
 
 
 def get_usersdata():
@@ -140,9 +143,14 @@ def get_user_data_as_dataframe():
             "user_type": [data[username]["user_type"] for username in data]
         }
     return DataFrame(nd)
+ 
+def get_houses():
+    from yaml import safe_load
 
-
-   
+    with open(INTERNALS_PATH+"default_parameters.yaml") as file:
+        houses = safe_load(file)["houses"]
+        houses = [(house,) for house in houses]
+    return houses   
 
 
 
