@@ -1,5 +1,4 @@
 from pandas import read_sql
-import streamlit as st
 from backend.file_operations import get_current_database_path
 from backend.sqlite_connections import SQliteConnectCursor, SQliteConnectConnection
 

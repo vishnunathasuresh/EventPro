@@ -1,3 +1,4 @@
+from altair import Axis
 import streamlit as st
 from streamlit import session_state
 from pandas import DataFrame, read_sql
@@ -57,7 +58,7 @@ def main()->None:
         with final_sheet_view_container:
             st.subheader(f"📝 Final Judgement Sheet for :orange[{str(category_selected).title()} - {event_selected}]", divider=True)
             st.toggle(
-                "Consolidation prize Allowed",key="consolidation_allowed"
+                "Consolation prize Allowed",key="consolation_allowed"
             )
             st.number_input(
                 "The minimum marks for awarding a prize (INCLUSIVE)",
@@ -68,7 +69,6 @@ def main()->None:
                 key="min_marks_for_prize",
             )
             
-
             processed_dataframe = process_dataframe(edited_df)
             st.dataframe(
                 processed_dataframe,
@@ -115,8 +115,7 @@ def get_column_info():
             ),
             "GRADE": "Grade",
             "DISQUALIFIED": st.column_config.CheckboxColumn(
-                "Disqualified",
-                default=False,
+                "Disqualified"
             ),
             "REMARKS": "Remarks if Any",
 
@@ -126,6 +125,43 @@ def get_column_info():
     admno_name_class_division_column_info.update(total_grade_disqualifiedstatus_remarks_column_info)
     final_column_info = admno_name_class_division_column_info.copy()
     return final_column_info
+
+def get_grades_minmarks():
+    with SQliteConnectCursor() as cursor:
+        query = """
+        --sql
+        SELECT GRADE, MIN_MARKS FROM GRADE_MARKS ORDER BY MIN_MARKS ASC
+        ;
+        """
+        cursor.execute(query)
+        data = dict(cursor.fetchall())
+    return data
+
+def process_dataframe(dataframe:DataFrame):
+    dataframe = dataframe.copy()
+    columns_to_add = JUDGELABELS
+    df = dataframe
+
+    # calculate total marks of all students
+    df["TOTAL_MARKS"] = df[columns_to_add].sum(axis=1)
+
+    #grade all students based on their total-marks
+    df["GRADE"] = df["TOTAL_MARKS"].apply(assign_grade)
+
+    #rank un-disqualified students on the basis of their total-marks
+    df['RANK'] = df[df['DISQUALIFIED'] == False]['TOTAL_MARKS'].rank(method="dense", ascending=False)
+    df['RANK'] = df['RANK'].fillna(-1)
+
+    #beautify and turn the decimal rank denoted by .rank() method to an appropriate string
+    df["RANK"] = df[["RANK", "DISQUALIFIED"]].apply(assign_rank, axis=1) # type: ignore
+
+    df['RANK'] = df[['RANK', 'TOTAL_MARKS']].apply(
+        evaluate_consolation, axis=1 # type: ignore
+    )
+        
+    # sort students on the basis of total-marks in descending order
+    df.sort_values(by='TOTAL_MARKS', ascending=False, inplace=False)
+    return df
 
 def assign_grade(marks):
 
@@ -142,46 +178,15 @@ def assign_grade(marks):
 
     return grade
 
-def get_grades_minmarks():
-    with SQliteConnectCursor() as cursor:
-        query = """
-        --sql
-        SELECT GRADE, MIN_MARKS FROM GRADE_MARKS ORDER BY MIN_MARKS ASC
-        ;
-        """
-        cursor.execute(query)
-        data = dict(cursor.fetchall())
-    return data
-
-
-def process_dataframe(dataframe:DataFrame):
-    dataframe = dataframe.copy()
-    columns_to_add = JUDGELABELS
-    df = dataframe
-    df["TOTAL_MARKS"] = df[columns_to_add].sum(axis=1)
-    df["GRADE"] = df["TOTAL_MARKS"].apply(assign_grade)
-    df['RANK'] = df['TOTAL_MARKS'].rank(method="dense", ascending=False)
-    df["RANK"] = df[["RANK", "DISQUALIFIED"]].apply(assign_rank, axis=1) # type: ignore
-    fn = lambda x: 'CONSOLIDATION' if (x['RANK'] is not None) and (x['TOTAL_MARKS'] < session_state.min_marks_for_prize) else x['RANK']
-
-    df['RANK'] = df[['RANK', 'TOTAL_MARKS']].apply(
-        evaluate_rank, axis=1 # type: ignore
-    )
-        
-    df.sort_values(by='TOTAL_MARKS', ascending=False, inplace=False)
-    return df
-
-
-def evaluate_rank(x):
+def evaluate_consolation(x):
     
-    if (x['RANK'] is not None) and (x['TOTAL_MARKS'] < session_state.min_marks_for_prize and session_state.consolidation_allowed):
-        return "CONSOLIDATION" # CONSOLIDATION RANK IF RANK IS 1,2,3 BUT LESS THAN MIN_MARKS_FOR_PRIZE
+    if (x['RANK'] is not None) and (x['TOTAL_MARKS'] < session_state.min_marks_for_prize and session_state.consolation_allowed):
+        return "CONSOLATION" # consolation RANK IF RANK IS 1,2,3 BUT LESS THAN MIN_MARKS_FOR_PRIZE
     elif x['TOTAL_MARKS'] < session_state.min_marks_for_prize:
         return None
     else:
         return x["RANK"] # NONE OR FIRST, SECOND OR THIRD
     
-
 def assign_rank(x):
     if  x["DISQUALIFIED"] == False: 
         if x["RANK"] == 1.0:
@@ -195,8 +200,6 @@ def assign_rank(x):
     else:
         return None
     
-        
-
 def fetch_data(category, event):
     with SQliteConnectConnection() as conn:
         
@@ -213,10 +216,6 @@ def fetch_data(category, event):
             query, conn
         )
     return data
-
-
-
-
 
 @st.cache_data   
 def get_class_category_from(database_path):

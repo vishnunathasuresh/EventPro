@@ -1,8 +1,6 @@
 import streamlit as st
-from streamlit import session_state
 import os
-from pandas import DataFrame, read_sql
-
+from pandas import read_sql
 from backend.file_operations import get_current_database_path
 from backend.sqlite_connections import SQliteConnectConnection, SQliteConnectCursor
 from components.navigation import show_go_back_to_home_in_sidebar

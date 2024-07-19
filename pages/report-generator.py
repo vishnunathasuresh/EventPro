@@ -1,10 +1,9 @@
-import streamlit as st
-from backend.data_processing import get_judge_labels
+import streamlit as st 
 from backend.documents_generator import ReportGenerator
 from backend.file_operations import get_current_database_path
 from components.navigation import show_go_back_to_home_in_sidebar
 from components.page_configuration_component import page_configuration
-from backend.database_reader import DatabaseFetch, DatabaseFetchDataframe, SQliteConnectCursor,SQliteConnectConnection
+from backend.database_reader import DatabaseFetch, DatabaseFetchDataframe
 
 
 page_configuration("📝", "Report Generation")

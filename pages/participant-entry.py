@@ -3,7 +3,9 @@ from streamlit import session_state
 from backend.constants import *
 from backend.database_reader import DatabaseFetch
 from backend.data_processing import add_to_session_state
-from components import *
+from backend.submit_functions import submit_student_details_to_participant_table
+from components.navigation import show_go_back_to_home_in_sidebar
+from components.page_configuration_component import page_configuration
 
 page_configuration(
     icon="🗓️",

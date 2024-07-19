@@ -63,10 +63,11 @@ class ReportGenerator:
     def __create_category_reports(self, conn, category:str):
         query = """
         --sql
-        SELECT STUDENT.ADMISSION_NUMBER, STUDENT_NAME, CLASS, DIVISION, HOUSE, GROUP_CONCAT(EVENT_NAME, ', ') AS EVENTS
+        SELECT PARTICIPANT.ADMISSION_NUMBER, STUDENT_NAME, CLASS, DIVISION, HOUSE, GROUP_CONCAT(EVENT_NAME, ', ') AS EVENTS
         FROM STUDENT, PARTICIPANT
         WHERE STUDENT.ADMISSION_NUMBER = PARTICIPANT.ADMISSION_NUMBER
-        AND CATEGORY = ? 
+        GROUP BY PARTICIPANT.ADMISSION_NUMBER
+        HAVING CATEGORY = ?
         ORDER BY CLASS ASC, DIVISION ASC, STUDENT_NAME ASC
         ;
         """
@@ -120,7 +121,7 @@ class ReportGenerator:
         )
     
     def __create_reports_directory(self):
-        shutil.rmtree(REPORTS_PATH)
+        shutil.rmtree(REPORTS_PATH, ignore_errors=True)
         os.makedirs(REPORTS_PATH)
 
     def generate(self):

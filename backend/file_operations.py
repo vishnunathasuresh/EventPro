@@ -1,11 +1,7 @@
 from pandas import DataFrame
-import streamlit as st
 from backend.constants import *
 import os
 import yaml
-from backend.data_processing import get_class_category_dict_from, process_grade_marks, process_student_data_from
-from backend.sqlite_connections import SQliteConnectCursor
-from components.messages import show_error_message, show_general_message
 
 
 def get_usersdata():
@@ -117,11 +113,12 @@ def push_edits_to_users_yaml(df):
         final_dict[dictionary['username'][index]] = {
             'name':dictionary['name'][index],
             "password":dictionary['password'][index],
-            "user_type":dictionary['user_type'][index]
+            "user_type":dictionary['user_type'][index],
         }
     
     with open(INTERNALS_PATH + "users.yaml","w") as file:
         dump(final_dict,file)
+    
 
 def get_user_data_as_dataframe():
     data = get_usersdata()

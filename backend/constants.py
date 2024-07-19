@@ -28,9 +28,13 @@ CLASS_TO_NUMBER = {
 }
 DEFAULT_EVENTS = [
     "Pencil Drawing",
+    "Painting Crayons",
     "Painting Water Colour",
     "Painting Oil Colour",
     "Cartoon",
+    "Abstract Reasoning",
+    "Clay Modelling",
+    "Show and Tell",
     "Extempore English",
     "Extempore Malayalam",
     "Extempore Hindi",

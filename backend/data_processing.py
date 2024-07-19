@@ -1,9 +1,7 @@
 from io import StringIO
 from csv import reader as csv_reader
-from backend import *
 from backend.constants import *
 from streamlit import session_state 
-from random import choice
 import pandas as pd
 
 
@@ -81,7 +79,7 @@ def get_default_grades(TOTAL_MARKS):
             },
         ]
 
-def get_class_category_dict_from(dataframe: DataFrame):
+def get_class_category_dict_from(dataframe: pd.DataFrame):
     dictionary = dataframe.to_dict()
     final_dict = {}
     classes = dictionary["class"]

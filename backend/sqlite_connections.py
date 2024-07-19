@@ -1,6 +1,5 @@
 import os
-import sqlite3
-import streamlit as st
+import sqlite3 
 from backend.constants import DATABASE_DIRECTORY_PATH, DATABASE_EXTENSION
 from backend.data_processing import process_grade_marks, process_student_data_from, get_class_category_dict_from
 from backend.file_operations import get_current_database_path, get_houses

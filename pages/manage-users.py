@@ -1,7 +1,5 @@
 import streamlit as st
 from streamlit import session_state,column_config
-from backend.constants import INTERNALS_PATH
-from backend.data_processing import is_any_dataframe_cell_empty
 from backend.file_operations import get_user_data_as_dataframe, push_edits_to_users_yaml
 from components.navigation import show_go_back_to_home_in_sidebar, go_to_home_page
 from components.page_configuration_component import page_configuration

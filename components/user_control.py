@@ -11,10 +11,10 @@ class Authenticator:
     def __init__(self) -> None:
         self.usersdata = get_usersdata()
         self.auth = Authenticate(
-            credentials={"usernames": self.usersdata},
-            cookie_expiry_days=COOKIE_EXPIRY_DAYS,
-            cookie_key="eventpro-auth",
-            cookie_name="eventpro-auth"
+            {"usernames": self.usersdata},
+            "eventpro-auth",
+            "eventpro-auth",
+            COOKIE_EXPIRY_DAYS,
         )
 
     def login(self):
