@@ -25,7 +25,7 @@ def get_authenticated_pages_database_present():
 				st.page_link( 
 					label="Participant Entry",
 					page="./pages/participant-entry.py", 
-					icon="🗓️",
+					icon="✒️",
 					help="Create and manage participants.",
 					use_container_width=True
 				)
@@ -33,7 +33,7 @@ def get_authenticated_pages_database_present():
 				st.page_link( 
 					label="Reports",
 					page="./pages/report-generator.py", 
-					icon="📄",
+					icon="📃",
 					disabled= USERTYPE != ADMIN,
 					help="Generate detailed reports of participants.",
 					use_container_width=True
@@ -60,7 +60,7 @@ def get_authenticated_pages_database_present():
 				st.page_link( 
 					label="Manage Users",
 					page="./pages/manage-users.py", 
-					icon="🤖",
+					icon="🛡️",
 					disabled= USERTYPE != ADMIN,
 					help="Manage users having access to the application.",
 					use_container_width=True
@@ -80,18 +80,18 @@ def get_authenticated_pages_database_present():
 				)
 
 				st.page_link( 
-					label="View Participants",
+					label="View & Edit Tables",
 					page="./pages/edit-database-tables.py", 
-					icon="🔍",
+					icon="📝",
 					disabled= USERTYPE == USER,
-					help="View the participants entered in the database.",
+					help="View the participants entered in the database & edit student details",
 					use_container_width=True
 				)
 
 				st.page_link( 
 					label="View Previous Databases",
 					page="./pages/view-previous-databases.py", 
-					icon="⏮️",
+					icon="👈",
 					disabled= USERTYPE == USER,
 					help="View results and namelist from previous databases.",
 					use_container_width=True
@@ -112,7 +112,7 @@ def get_authenticated_pages_database_present():
 				st.page_link( 
 					label="About Me",
 					page="./pages/about-me.py", 
-					icon="✨",
+					icon="😊",
 					help="Connect with the creator of the application.",
 					use_container_width=True
 				)

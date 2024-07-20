@@ -5,7 +5,7 @@ from components.navigation import show_go_back_to_home_in_sidebar, go_to_home_pa
 from components.page_configuration_component import page_configuration
 
 
-page_configuration('🧔‍♂️', "Manage Users")
+page_configuration('🛡️', "Manage Users")
 show_go_back_to_home_in_sidebar()
 
 USERNAME = session_state.user_info["username"]
@@ -13,7 +13,7 @@ USERTYPE = session_state.user_info["user_type"]
 USERTYPES = ["admin", "elevated-user", "user"]
 
 def main()-> None:
-    st.title("🧑‍💻 User Management System")
+    st.title("🧑‍💻 User Management")
     st.divider()
 
 

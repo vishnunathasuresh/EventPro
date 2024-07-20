@@ -10,7 +10,7 @@ from backend.constants import SAVED_DATABASES_DIRECTORY_PATH, DATABASE_EXTENSION
 
 DATABASE_PATH = get_current_database_path()
 
-page_configuration("⏮️", "View Previous Databases")
+page_configuration("👈", "View Previous Databases")
 show_go_back_to_home_in_sidebar()
 
 
