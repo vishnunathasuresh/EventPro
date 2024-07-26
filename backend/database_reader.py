@@ -257,17 +257,19 @@ class ParameterUpdator:
 
     def update_events_to_parameters(self, df: DataFrame):
         data = df.to_dict(orient="records")
-        with SQliteConnectCursor() as cursor:
-            cursor.execute(
+        with SQliteConnectConnection() as conn:
+            cur= conn.cursor()
+            cur.execute(
                 """
                 --sql
-                DELETE EVENT_NAME
-                FROM EVENT_NAME
+                DELETE FROM EVENT_NAME
                 ;
                 """
             )
+            conn.commit()
+
             for record in data:
-                cursor.execute(
+                cur.execute(
                     """
                     --sql
                     INSERT INTO EVENT_NAME
@@ -276,6 +278,7 @@ class ParameterUpdator:
                     """,
                     (record["EVENT_NAME"],),
                 )
+
             show_success_message("The events have been updated")
 
     def update_grades_min_marks(self, df: DataFrame):
@@ -289,8 +292,7 @@ class ParameterUpdator:
             cursor.execute(
                 """
                 --sql
-                DELETE GRADE, MIN_MARKS
-                FROM GRADE_MARKS
+                DELETE FROM GRADE_MARKS
                 ;
                 """
             )

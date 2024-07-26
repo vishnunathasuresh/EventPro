@@ -133,7 +133,7 @@ def edit_section():
     params = fetch.get_database_specs()
     total_marks = params[0] * params[1]
     grades = df_fetch.get_grade_marks_df()
-    available_events = DataFrame({"Event name": fetch.get_events()})
+    available_events = DataFrame({"EVENT_NAME": fetch.get_events()})
 
     with st.container(border=True):
         st.subheader("Edit Parameters Section", divider=True)
@@ -144,7 +144,7 @@ def edit_section():
             edit_events_df: DataFrame = st.data_editor(
                 data=available_events,
                 column_config={
-                    "Event name": st.column_config.TextColumn(required=True)
+                    "EVENT_NAME": st.column_config.TextColumn(label="Event name", required=True)
                 },
                 num_rows="dynamic",
                 use_container_width=True,
@@ -203,14 +203,14 @@ def edit_section():
                 step=1,
                 value=params[3],
             )
-
-            if st.button("Update Parameters"):
-                push_parameters.update_other_parameters(
-                    max_marks_for_each_judge=max_marks_for_each_judge,
-                    total_marks=total_marks,
-                    min_marks_for_prize=min_marks_for_prize,
-                    max_no_of_events=max_no_of_events,
-                )
+            if any((max_no_of_events != params[3], min_marks_for_prize != params[2], max_marks_for_each_judge != params[0])):
+                if st.button("Update Parameters"):
+                    push_parameters.update_other_parameters(
+                        max_marks_for_each_judge=max_marks_for_each_judge,
+                        total_marks=total_marks,
+                        min_marks_for_prize=min_marks_for_prize,
+                        max_no_of_events=max_no_of_events,
+                    )
 
 
 fetch = DatabaseFetch()
