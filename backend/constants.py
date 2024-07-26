@@ -28,6 +28,12 @@ CLASS_TO_NUMBER = {
 }
 DEFAULT_EVENTS = [
     "Pencil Drawing",
+    "Elocution Malayalam",
+    "Elocution English",
+    "Elocution Hindi",
+    "Story Telling Malayalam",
+    "Story Telling Hindi",
+    "Story Telling English",
     "Painting Crayons",
     "Painting Water Colour",
     "Painting Oil Colour",
