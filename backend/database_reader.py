@@ -258,7 +258,7 @@ class ParameterUpdator:
     def update_events_to_parameters(self, df: DataFrame):
         data = df.to_dict(orient="records")
         with SQliteConnectConnection() as conn:
-            cur= conn.cursor()
+            cur = conn.cursor()
             cur.execute(
                 """
                 --sql
