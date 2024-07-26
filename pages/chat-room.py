@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 from streamlit import session_state
 import pickle as pkl
 from os import makedirs, remove
@@ -8,12 +8,7 @@ from components.navigation import show_go_back_to_home_in_sidebar
 from components.page_configuration_component import page_configuration
 
 
-
-page_configuration(
-    icon="📧",
-    title="Chat Room",
-    autorefresh=True
-)
+page_configuration(icon="📧", title="Chat Room", autorefresh=True)
 show_go_back_to_home_in_sidebar()
 
 chat_help = """
@@ -25,31 +20,28 @@ FILE = INTERNALS_PATH + CHAT_FILE
 AVATAR = session_state.user_info["avatar"]
 
 
-def main()-> None:
-    st.title("📧 Chat Window", help = chat_help)
+def main() -> None:
+    st.title("📧 Chat Window", help=chat_help)
     st.divider()
-    
 
     clear_chat_history = st.button(
         label="Clear Chat History for all",
         type="primary",
         disabled=USERTYPE != "admin",
-        help="Clears the messages and restarts the chat afresh."
+        help="Clears the messages and restarts the chat afresh.",
     )
 
     if clear_chat_history:
         clear_chat_history_for_all()
 
-    add_to_session_state(
-        messages = []
-    )
-    
+    add_to_session_state(messages=[])
+
     # Load messages to memory from files
     load_messages_from_file()
 
     # Display chat messages from history on app rerun
     load_messages_to_app()
-    
+
     # Show message-input-box and add to messages
     if prompt := st.chat_input("Your Message"):
         load_messages_from_file()
@@ -68,6 +60,7 @@ def main()-> None:
         )
         write_messages_to_file()
 
+
 def clear_chat_history_for_all():
     try:
         remove(FILE)
@@ -75,9 +68,11 @@ def clear_chat_history_for_all():
         session_state.messages = []
         st.rerun()
 
+
 def write_messages_to_file():
     with open(FILE, "wb") as file:
         pkl.dump(session_state.messages, file)
+
 
 def load_messages_from_file():
     try:
@@ -87,10 +82,12 @@ def load_messages_from_file():
         session_state.messages = []
         makedirs(INTERNALS_PATH, exist_ok=True)
 
+
 def load_messages_to_app():
     for message in session_state.messages:
         with st.chat_message(message["role"], avatar=message["avatar"]):
             st.write(message["content"])
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()

@@ -12,10 +12,12 @@ def submit_student_details_to_participant_table(
     events_selected,
     event_column,
 ):
-    if house_selected == 'No House':
+    if house_selected == "No House":
         house_selected = None
-    
-    if events_selected != []:pass
+
+    if events_selected != []:
+        pass
+
     def submit():
         with SQliteConnectCursor(get_current_database_path()) as cursor:
             query = """
@@ -24,7 +26,7 @@ def submit_student_details_to_participant_table(
             ;
             """
             cursor.execute(query, (admission_number,))
-        
+
         with SQliteConnectCursor(get_current_database_path()) as cursor:
             query = """
             --sql
@@ -34,10 +36,9 @@ def submit_student_details_to_participant_table(
             ;
             """
             cursor.execute(query, (house_selected, admission_number))
-            st.toast("House : "+ str(house_selected), icon="✨")
-            
-            for event in events_selected:
+            st.toast("House : " + str(house_selected), icon="✨")
 
+            for event in events_selected:
                 query = """
                 --sql
                 INSERT INTO PARTICIPANT (ADMISSION_NUMBER, EVENT_NAME)
@@ -50,18 +51,17 @@ def submit_student_details_to_participant_table(
                     icon="➡️",
                 )
 
-
     with event_column:
         with st.spinner("Updating Database..."):
             submit()
 
-        
         st.toast(
             "The student details has been submitted to the database successfully",
             icon="✅",
         )
 
-def push_judgement_to_participant_table(df:DataFrame, JUDGELABELS):
+
+def push_judgement_to_participant_table(df: DataFrame, JUDGELABELS):
     data = df.to_dict(orient="records")
     with SQliteConnectCursor() as cursor:
         query = """
@@ -76,12 +76,21 @@ def push_judgement_to_participant_table(df:DataFrame, JUDGELABELS):
         WHERE ADMISSION_NUMBER = ?
         ;
         """
-        
-        for rec in data:
 
-            cursor.execute(query, (rec["TOTAL_MARKS"], rec["GRADE"], rec["RANK"],rec["DISQUALIFIED"], rec["REMARKS"], rec["ADMISSION_NUMBER"]))
+        for rec in data:
+            cursor.execute(
+                query,
+                (
+                    rec["TOTAL_MARKS"],
+                    rec["GRADE"],
+                    rec["RANK"],
+                    rec["DISQUALIFIED"],
+                    rec["REMARKS"],
+                    rec["ADMISSION_NUMBER"],
+                ),
+            )
             for judge in JUDGELABELS:
-                Q2 = F"""
+                Q2 = f"""
                 --sql
                 UPDATE PARTICIPANT SET {judge} = ? WHERE ADMISSION_NUMBER = ?
                 ;
@@ -89,7 +98,10 @@ def push_judgement_to_participant_table(df:DataFrame, JUDGELABELS):
                 cursor.execute(Q2, (rec[judge], rec["ADMISSION_NUMBER"]))
         st.toast("The data has been updated at the server", icon="✅")
 
-def update_student_details_to_student_table(admission_number, name, class_, division, house,category):
+
+def update_student_details_to_student_table(
+    admission_number, name, class_, division, house, category
+):
     with SQliteConnectCursor() as cursor:
         query = """
         --sql

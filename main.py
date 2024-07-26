@@ -1,17 +1,20 @@
 from socket import gethostbyname, gethostname
-import streamlit as st 
+import streamlit as st
 from streamlit import session_state
-from backend.file_operations import archive_database, delete_database_permanent, get_current_database_name, get_saved_databases
+from backend.file_operations import (
+    archive_database,
+    delete_database_permanent,
+    get_current_database_name,
+    get_saved_databases,
+)
 from components.navigation import *
 from components.messages import *
 from components.page_configuration_component import *
 from components.user_control import *
 from backend.constants import *
 
-page_configuration(
-    icon="🏡",
-    title="Home"
-)
+page_configuration(icon="🏡", title="Home")
+
 
 def main():
     st.title("🏡 EventPro Home")
@@ -29,35 +32,39 @@ def main():
             get_authenticated_pages_database_present()
             initailize_database_functions(usertype)
 
-
         else:
             get_authenticated_no_database_pages()
             if usertype != "admin":
-                show_error_message("Contact Admin... The current database is yet to be created")
+                show_error_message(
+                    "Contact Admin... The current database is yet to be created"
+                )
         auth.logout()
-        display_general_details_and_userinfo(current_database, saved_databases, userinfo)
-  
+        display_general_details_and_userinfo(
+            current_database, saved_databases, userinfo
+        )
+
     else:
         get_unauthenticated_pages()
-        show_general_message("Authentication required", icon = "🛡️")
-       
+        show_general_message("Authentication required", icon="🛡️")
+
+
 def initailize_database_functions(user_type):
     if user_type == "admin":
         with st.sidebar:
             st.divider()
-            
+
             delete_database = st.button(
                 label="Delete Database Permanently",
                 help="This action is permanent and it cannot be reversed",
                 type="primary",
-                use_container_width= True,
+                use_container_width=True,
             )
 
             save_database = st.button(
                 label="Archive Database",
                 help="Archiving a database would save the database state. The database will be deactivated for further writing purposes.",
                 type="primary",
-                use_container_width= True,
+                use_container_width=True,
             )
         if delete_database:
             delete_database_permanent()
@@ -65,7 +72,8 @@ def initailize_database_functions(user_type):
         if save_database:
             archive_database()
             st.rerun()
-        
+
+
 def initialize_userinfo(userinfo, username):
     if "user_info" not in session_state:
         session_state["user_info"] = userinfo
@@ -74,30 +82,26 @@ def initialize_userinfo(userinfo, username):
     else:
         if session_state.user_info != userinfo:
             session_state.user_info = userinfo
-        
+
+
 def display_general_details_and_userinfo(current_database, saved_databases, user_info):
-    info_container = st.container(border= True)
+    info_container = st.container(border=True)
     with info_container:
-            st.subheader(
-                "✨ Important Info",
-                divider=True
-            )
-            databasename = current_database.split(".")[0] if current_database is not None else ""
-            st.write("🚀 Current Database : ", databasename)
-            st.write("🚀 Saved Databases : ", " ; ".join(saved_databases))
-            st.write(f"🚀 The IP address : **{gethostbyname(gethostname())}:8501**")
+        st.subheader("✨ Important Info", divider=True)
+        databasename = (
+            current_database.split(".")[0] if current_database is not None else ""
+        )
+        st.write("🚀 Current Database : ", databasename)
+        st.write("🚀 Saved Databases : ", " ; ".join(saved_databases))
+        st.write(f"🚀 The IP address : **{gethostbyname(gethostname())}:8501**")
     user_container = st.container(border=True)
     with user_container:
-        st.subheader(
-            "😉 User Info",
-            divider=True
-        )
+        st.subheader("😉 User Info", divider=True)
         st.write(f"**➡️ Username : {user_info['username'] }**")
         st.write(f"**➡️ Name : {user_info['name'] }**")
         st.write(f"**➡️ Role : {user_info['user_type'] }**")
         st.write(f"**➡️ Handle : {user_info['handle'] }**")
-        st.write(f"**➡️ Avatar : {user_info['avatar'] }**" )
-
+        st.write(f"**➡️ Avatar : {user_info['avatar'] }**")
 
 
 if __name__ == "__main__":

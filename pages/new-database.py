@@ -8,9 +8,7 @@ from backend.sqlite_connections import DatabaseEngine
 from components.navigation import show_go_back_to_home_in_sidebar
 from components.page_configuration_component import page_configuration
 
-page_configuration(
-    "🚀", "New Database"
-)
+page_configuration("🚀", "New Database")
 show_go_back_to_home_in_sidebar()
 
 
@@ -20,7 +18,6 @@ def main() -> None:
 
     create_database_container = st.container(border=True)
     with create_database_container:
-
         database_name = st.text_input(
             label="What should be the database name?",
             placeholder="eg. Memories",
@@ -43,8 +40,8 @@ def main() -> None:
         )
 
         total_marks = number_of_judges * max_marks_for_each_judge
-        
-        #-------------------------------------------------
+
+        # -------------------------------------------------
         st.subheader("Edit Grades", divider=True)
         grades_table_column_info = {
             "grade": column_config.Column(disabled=True, label="Grade"),
@@ -73,14 +70,14 @@ def main() -> None:
             step=1,
         )
 
-        #--------------------------------------------------
+        # --------------------------------------------------
         st.subheader("Edit Events", divider=True)
         events_table_column_info = {
             "event": column_config.TextColumn(
                 label="Event", required=True, validate="^[a-zA-Z]+$"
             )
         }
-        max_number_of_events=st.number_input(
+        max_number_of_events = st.number_input(
             "Enter the number of events a student can participate in",
             value=5,
             step=1,
@@ -95,7 +92,7 @@ def main() -> None:
             column_config=events_table_column_info,
         )
 
-        #--------------------------------------------------
+        # --------------------------------------------------
         categories_and_classes_container = st.container(border=True)
         with categories_and_classes_container:
             st.subheader("Categories and Classes Allotment", divider=True)
@@ -104,7 +101,7 @@ def main() -> None:
                 "class": CLASSES,
                 "category": [None for _ in range(len(CLASSES))],
             }
-            
+
             number_of_categories = st.number_input(
                 label="Number of Categories",
                 min_value=2,
@@ -112,9 +109,10 @@ def main() -> None:
                 value=4,
                 step=1,
             )
-            
+
             categories = [
-                f"category {number}" for number in range(1, int(number_of_categories) + 1)
+                f"category {number}"
+                for number in range(1, int(number_of_categories) + 1)
             ]
 
             categories_and_classes_table_container = st.container()
@@ -130,9 +128,8 @@ def main() -> None:
                     use_container_width=True,
                     num_rows="fixed",
                     column_config=edited_class_category_column_info,
-                    hide_index=True
+                    hide_index=True,
                 )
-
 
                 uploaded_csv = st.file_uploader(
                     label="Upload Student Data",
@@ -140,7 +137,7 @@ def main() -> None:
                     accept_multiple_files=False,
                     help=CSV_HELP,
                 )
-                             
+
     all_parameters_are_set = (
         database_name != ""
         and max_marks_for_each_judge
@@ -166,11 +163,12 @@ def main() -> None:
             min_marks_for_prize=min_marks_for_prize,
             available_events_=available_events,
             grades=grades,
-            max_number_of_events = max_number_of_events,
+            max_number_of_events=max_number_of_events,
             edited_class_category_dataframe=edited_class_category_dataframe,
-            uploaded_csv=uploaded_csv
+            uploaded_csv=uploaded_csv,
         )
         engine.create_database()
+
 
 EVENTS = get_parameters()["events"]
 CSV_HELP = """

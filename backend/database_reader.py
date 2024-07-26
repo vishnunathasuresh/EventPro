@@ -9,14 +9,17 @@ class DatabaseFetch:
 
     def get_events_from_category(self, category):
         with SQliteConnectCursor() as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT DISTINCT EVENT_NAME 
             FROM PARTICIPANT,STUDENT
             WHERE STUDENT.ADMISSION_NUMBER = PARTICIPANT.ADMISSION_NUMBER
             AND STUDENT.CATEGORY = ?
             ;
-            """,(category,))
+            """,
+                (category,),
+            )
 
             eves = cursor.fetchall()
         return [E[0] for E in eves]
@@ -26,48 +29,57 @@ class DatabaseFetch:
         NUMBER_OF_JUDGES, MAX_MARKS_FOR_EACH_JUDGE, MIN_MARKS_FOR_PRIZE, MAXIMUM_EVENTS_FOR_PARTICIPATION, RESULTS_READY
         """
         with SQliteConnectCursor(file_path=self.path) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT NUMBER_OF_JUDGES, MAX_MARKS_FOR_EACH_JUDGE, MIN_MARKS_FOR_PRIZE, MAXIMUM_EVENTS_FOR_PARTICIPATION, RESULTS_READY
             FROM PARAMETER
             ;
-            """)
+            """
+            )
             data = cursor.fetchone()
         return data
 
     def get_events(self):
         with SQliteConnectCursor(self.path) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT EVENT_NAME FROM EVENT_NAME
             ;
-            """)
+            """
+            )
             eves = cursor.fetchall()
         return [E[0] for E in eves]
 
     def get_categories(self):
         with SQliteConnectCursor(self.path) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT DISTINCT CATEGORY FROM CLASS_CATEGORY
             ;
-            """)
-            cats =cursor.fetchall()
+            """
+            )
+            cats = cursor.fetchall()
         return [cat[0] for cat in cats]
 
     def get_classes(self):
         with SQliteConnectCursor(self.path) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT DISTINCT CLASS FROM CLASS_CATEGORY
             ;
-            """)
-            cats =cursor.fetchall()
+            """
+            )
+            cats = cursor.fetchall()
         return [cat[0] for cat in cats]
 
     def get_houses(self):
         with SQliteConnectCursor(self.path) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT HOUSE FROM HOUSE
             ;
@@ -75,51 +87,57 @@ class DatabaseFetch:
             )
             houses = cursor.fetchall()
         return [house[0] for house in houses]
-    
+
     def get_details_of_admission_number(self, admission_number):
         """
         STUDENT_NAME, CLASS, DIVISION, HOUSE,  events
         """
         with SQliteConnectCursor(self.path) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT STUDENT_NAME, CLASS, DIVISION, HOUSE
             FROM STUDENT
             WHERE ADMISSION_NUMBER = ?
             ;
-            """, (admission_number,))
-            
+            """,
+                (admission_number,),
+            )
 
-            name, class_, division, house =cursor.fetchone()
+            name, class_, division, house = cursor.fetchone()
         EVENTS = self.get_events_from_database(admission_number)
         return name, class_, division, house, EVENTS
-    
-    def get_events_from_database(self,admission_number):
+
+    def get_events_from_database(self, admission_number):
         with SQliteConnectCursor(self.path) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT EVENT_NAME
             FROM PARTICIPANT
             WHERE ADMISSION_NUMBER = ?
             ;
-            """, (admission_number,))
+            """,
+                (admission_number,),
+            )
 
-
-            DATA =cursor.fetchall()
+            DATA = cursor.fetchall()
             DATA = [d[0] for d in DATA]
         return DATA
 
     def get_all_admission_numbers(self):
         with SQliteConnectCursor(self.path) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT DISTINCT ADMISSION_NUMBER
             FROM STUDENT
             ;
-            """)
+            """
+            )
             cats = cursor.fetchall()
 
-            DATA =[cat[0] for cat in cats]
+            DATA = [cat[0] for cat in cats]
         return DATA
 
     def get_database_specs(self):
@@ -138,35 +156,39 @@ class DatabaseFetch:
             FROM PARAMETER
             ;
             """
-            
+
             cursor.execute(query)
             tup1 = cursor.fetchone()
         return tup1
 
     def get_participant_number(self):
         with SQliteConnectCursor() as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT COUNT(DISTINCT ADMISSION_NUMBER) FROM PARTICIPANT
             ;
-            """)
+            """
+            )
             a = cursor.fetchone()[0]
         return a
 
     def get_distinct_events_in_participant_table(self):
-
         with SQliteConnectCursor() as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
             --sql
             SELECT DISTINCT EVENT_NAME FROM PARTICIPANT
             ;
-            """)
+            """
+            )
             return [house[0] for house in cursor.fetchall()]
+
 
 class DatabaseFetchDataframe:
     def __init__(self) -> None:
         self.database_path = get_current_database_path()
-    
+
     def get_participant_df(self):
         query = """
         --sql
@@ -177,11 +199,9 @@ class DatabaseFetchDataframe:
         ;
         """
         with SQliteConnectConnection() as conn:
-            df = read_sql(
-                query, conn
-            )
+            df = read_sql(query, conn)
 
-        return df 
+        return df
 
     def get_student_df(self):
         query = """
@@ -192,9 +212,7 @@ class DatabaseFetchDataframe:
         ;
         """
         with SQliteConnectConnection() as conn:
-            df = read_sql(
-                query, conn
-            )
+            df = read_sql(query, conn)
 
         return df
 
@@ -202,7 +220,7 @@ class DatabaseFetchDataframe:
         with SQliteConnectConnection() as conn:
             df = read_sql(
                 "SELECT * FROM CLASS_CATEGORY ",
-                con = conn, 
+                con=conn,
             )
         return df
 
@@ -210,12 +228,13 @@ class DatabaseFetchDataframe:
         with SQliteConnectConnection() as conn:
             df = read_sql(
                 "SELECT * FROM GRADE_MARKS ",
-                con = conn, 
+                con=conn,
             )
         return df
 
     def get_participants_from_event_category_df(self, category, event):
         from pandas import read_sql
+
         with SQliteConnectConnection() as conn:
             query = """
             --sql
@@ -227,9 +246,5 @@ class DatabaseFetchDataframe:
             ORDER BY CLASS ASC, DIVISION ASC, STUDENT_NAME ASC
             ;
             """
-            data = read_sql(
-                query, conn,
-                params=(category, event)
-            )
+            data = read_sql(query, conn, params=(category, event))
             return data
-

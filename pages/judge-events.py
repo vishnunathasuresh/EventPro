@@ -10,17 +10,14 @@ from components.navigation import show_go_back_to_home_in_sidebar
 from components.page_configuration_component import page_configuration
 
 
-
-page_configuration(
-    "🎯", "Judge Events"
-)
+page_configuration("🎯", "Judge Events")
 show_go_back_to_home_in_sidebar()
 
 
-def main()->None:
+def main() -> None:
     st.title("Judgement")
     st.divider()
-    
+
     column_info = get_column_info()
 
     event_selection_container = st.container(border=True)
@@ -41,8 +38,10 @@ def main()->None:
     st.session_state.orginal_df = fetch_data(category_selected, event_selected)
     if event_selected is not None:
         with table_container:
-            st.subheader(f"✏️ Marks Updation Sheet for :blue[{str(category_selected).title()} - {event_selected}]", divider=True)
-
+            st.subheader(
+                f"✏️ Marks Updation Sheet for :blue[{str(category_selected).title()} - {event_selected}]",
+                divider=True,
+            )
 
             edited_df = st.data_editor(
                 data=st.session_state.orginal_df,
@@ -56,19 +55,20 @@ def main()->None:
             )
 
         with final_sheet_view_container:
-            st.subheader(f"📝 Final Judgement Sheet for :orange[{str(category_selected).title()} - {event_selected}]", divider=True)
-            st.toggle(
-                "Consolation prize Allowed",key="consolation_allowed"
+            st.subheader(
+                f"📝 Final Judgement Sheet for :orange[{str(category_selected).title()} - {event_selected}]",
+                divider=True,
             )
+            st.toggle("Consolation prize Allowed", key="consolation_allowed")
             st.number_input(
                 "The minimum marks for awarding a prize (INCLUSIVE)",
                 min_value=1,
-                max_value=NUMBER_OF_JUDGES*MAX_MARKS_FOR_ONE_JUDGE,
+                max_value=NUMBER_OF_JUDGES * MAX_MARKS_FOR_ONE_JUDGE,
                 step=1,
                 value=MIN_MARKS_FOR_PRIZE,
                 key="min_marks_for_prize",
             )
-            
+
             processed_dataframe = process_dataframe(edited_df)
             st.dataframe(
                 processed_dataframe,
@@ -78,53 +78,53 @@ def main()->None:
             )
 
             disabled_submit_judgement_condition = (
-                edited_df[edited_df["DISQUALIFIED"] == False]
-                .isnull()
-                .values.any()
+                edited_df[edited_df["DISQUALIFIED"] == False].isnull().values.any()
             )
 
             submit_judgement = st.button(
-                "Submit Changes", disabled=disabled_submit_judgement_condition, type="primary"# type:ignore
+                "Submit Changes",
+                disabled=disabled_submit_judgement_condition,
+                type="primary",  # type:ignore
             )
 
             if submit_judgement:
                 push_judgement_to_participant_table(processed_dataframe, JUDGELABELS)
-        
-def get_column_info():
 
+
+def get_column_info():
     admno_name_class_division_column_info = {
         "ADMISSION_NUMBER": "Admission Number",
-        "STUDENT_NAME": "Name", 
+        "STUDENT_NAME": "Name",
         "CLASS": "Class",
-        "DIVISION":"Division"
+        "DIVISION": "Division",
     }
     judges_column_info = {
         f"JUDGE{number}": st.column_config.NumberColumn(
             f"Judge {number}",
             required=True,
-            max_value =MAX_MARKS_FOR_ONE_JUDGE,
+            max_value=MAX_MARKS_FOR_ONE_JUDGE,
             min_value=0,
         )
         for number in range(1, NUMBER_OF_JUDGES + 1)
     }
     total_grade_disqualifiedstatus_remarks_column_info = {
         "TOTAL_MARKS": st.column_config.NumberColumn(
-                "Total",
-                disabled=True,
-                min_value=0,
-            ),
-            "GRADE": "Grade",
-            "DISQUALIFIED": st.column_config.CheckboxColumn(
-                "Disqualified"
-            ),
-            "REMARKS": "Remarks if Any",
-
+            "Total",
+            disabled=True,
+            min_value=0,
+        ),
+        "GRADE": "Grade",
+        "DISQUALIFIED": st.column_config.CheckboxColumn("Disqualified"),
+        "REMARKS": "Remarks if Any",
     }
 
-    admno_name_class_division_column_info.update(judges_column_info) # type: ignore
-    admno_name_class_division_column_info.update(total_grade_disqualifiedstatus_remarks_column_info)
+    admno_name_class_division_column_info.update(judges_column_info)  # type: ignore
+    admno_name_class_division_column_info.update(
+        total_grade_disqualifiedstatus_remarks_column_info
+    )
     final_column_info = admno_name_class_division_column_info.copy()
     return final_column_info
+
 
 def get_grades_minmarks():
     with SQliteConnectCursor() as cursor:
@@ -137,7 +137,8 @@ def get_grades_minmarks():
         data = dict(cursor.fetchall())
     return data
 
-def process_dataframe(dataframe:DataFrame):
+
+def process_dataframe(dataframe: DataFrame):
     dataframe = dataframe.copy()
     columns_to_add = JUDGELABELS
     df = dataframe
@@ -145,32 +146,34 @@ def process_dataframe(dataframe:DataFrame):
     # calculate total marks of all students
     df["TOTAL_MARKS"] = df[columns_to_add].sum(axis=1)
 
-    #grade all students based on their total-marks
+    # grade all students based on their total-marks
     df["GRADE"] = df["TOTAL_MARKS"].apply(assign_grade)
 
-    #rank un-disqualified students on the basis of their total-marks
-    df['RANK'] = df[df['DISQUALIFIED'] == False]['TOTAL_MARKS'].rank(method="dense", ascending=False)
-    df['RANK'] = df['RANK'].fillna(-1)
-
-    #beautify and turn the decimal rank denoted by .rank() method to an appropriate string
-    df["RANK"] = df[["RANK", "DISQUALIFIED"]].apply(assign_rank, axis=1) # type: ignore
-
-    df['RANK'] = df[['RANK', 'TOTAL_MARKS']].apply(
-        evaluate_consolation, axis=1 # type: ignore
+    # rank un-disqualified students on the basis of their total-marks
+    df["RANK"] = df[df["DISQUALIFIED"] == False]["TOTAL_MARKS"].rank(
+        method="dense", ascending=False
     )
-        
+    df["RANK"] = df["RANK"].fillna(-1)
+
+    # beautify and turn the decimal rank denoted by .rank() method to an appropriate string
+    df["RANK"] = df[["RANK", "DISQUALIFIED"]].apply(assign_rank, axis=1)  # type: ignore
+
+    df["RANK"] = df[["RANK", "TOTAL_MARKS"]].apply(
+        evaluate_consolation, axis=1  # type: ignore
+    )
+
     # sort students on the basis of total-marks in descending order
-    df.sort_values(by='TOTAL_MARKS', ascending=False, inplace=False)
+    df.sort_values(by="TOTAL_MARKS", ascending=False, inplace=False)
     return df
 
-def assign_grade(marks):
 
+def assign_grade(marks):
     bigger_numbers = [n for n in GRADE_MINMARKS.values() if n > marks]
     if bigger_numbers == []:
         max_num = max(GRADE_MINMARKS.values())
     else:
         max_num = min(bigger_numbers)
-    
+
     for key, min_marks in GRADE_MINMARKS.items():
         if min_marks == max_num:
             grade = key
@@ -178,32 +181,36 @@ def assign_grade(marks):
 
     return grade
 
+
 def evaluate_consolation(x):
-    
-    if (x['RANK'] is not None) and (x['TOTAL_MARKS'] < session_state.min_marks_for_prize and session_state.consolation_allowed):
-        return "CONSOLATION" # consolation RANK IF RANK IS 1,2,3 BUT LESS THAN MIN_MARKS_FOR_PRIZE
-    elif x['TOTAL_MARKS'] < session_state.min_marks_for_prize:
+    if (x["RANK"] is not None) and (
+        x["TOTAL_MARKS"] < session_state.min_marks_for_prize
+        and session_state.consolation_allowed
+    ):
+        return "CONSOLATION"  # consolation RANK IF RANK IS 1,2,3 BUT LESS THAN MIN_MARKS_FOR_PRIZE
+    elif x["TOTAL_MARKS"] < session_state.min_marks_for_prize:
         return None
     else:
-        return x["RANK"] # NONE OR FIRST, SECOND OR THIRD
-    
+        return x["RANK"]  # NONE OR FIRST, SECOND OR THIRD
+
+
 def assign_rank(x):
-    if  x["DISQUALIFIED"] == False: 
+    if x["DISQUALIFIED"] == False:
         if x["RANK"] == 1.0:
             return "FIRST"
-        elif x["RANK"]  == 2.0:
+        elif x["RANK"] == 2.0:
             return "SECOND"
-        elif x["RANK"]  == 3.0: 
+        elif x["RANK"] == 3.0:
             return "THIRD"
         else:
             return None
     else:
         return None
-    
+
+
 def fetch_data(category, event):
     with SQliteConnectConnection() as conn:
-        
-        query = F"""
+        query = f"""
         --sql
         SELECT STUDENT.ADMISSION_NUMBER, STUDENT_NAME, CLASS, {", ".join(JUDGELABELS)}, DISQUALIFIED, REMARKS
         FROM STUDENT, PARTICIPANT 
@@ -212,12 +219,11 @@ def fetch_data(category, event):
         AND EVENT_NAME = '{event}'
         ;
         """
-        data = read_sql(
-            query, conn
-        )
+        data = read_sql(query, conn)
     return data
 
-@st.cache_data   
+
+@st.cache_data
 def get_class_category_from(database_path):
     with SQliteConnectCursor() as cursor:
         query = """
@@ -229,6 +235,7 @@ def get_class_category_from(database_path):
         data = dict(cursor.fetchall())
     return data
 
+
 def get_params_from_database():
     with SQliteConnectCursor() as cursor:
         query = """
@@ -239,17 +246,20 @@ def get_params_from_database():
         """
         cursor.execute(query)
         TUP = cursor.fetchone()
-        
-        
+
     return TUP
 
 
 fetch = DatabaseFetch()
 CURRENT_DATABASE_PATH = get_current_database_path()
-CLASS_CATEGORY = get_class_category_from(database_path= CURRENT_DATABASE_PATH)
+CLASS_CATEGORY = get_class_category_from(database_path=CURRENT_DATABASE_PATH)
 CATEGORIES = list(set(CLASS_CATEGORY.values()))
 CATEGORIES.sort()
-NUMBER_OF_JUDGES, MAX_MARKS_FOR_ONE_JUDGE, MIN_MARKS_FOR_PRIZE = get_params_from_database()
+(
+    NUMBER_OF_JUDGES,
+    MAX_MARKS_FOR_ONE_JUDGE,
+    MIN_MARKS_FOR_PRIZE,
+) = get_params_from_database()
 JUDGELABELS = [f"JUDGE{number}" for number in range(1, NUMBER_OF_JUDGES + 1)]
 
 TABLE_MAX_HEIGHT = None
@@ -257,14 +267,5 @@ DISABLED_COLUMNS_JUDGEMENT_TABLE = ["ADMISSION_NUMBER", "STUDENT_NAME", "CLASS"]
 GRADE_MINMARKS = get_grades_minmarks()
 
 
-
-
-
-
 if __name__ == "__main__":
     main()
-
-
-
-
-

@@ -1,4 +1,4 @@
-#paths
+# paths
 DATABASE_DIRECTORY_PATH = "./databases/"
 DATABASE_EXTENSION = ".eventpro.db"
 SAVED_DATABASES_DIRECTORY_PATH = "./databases/archived/"
@@ -8,7 +8,7 @@ REPORTS_PATH = "./reports/"
 RESULTS_PATH = "./results/"
 CHAT_FILE = "chat.data"
 
-#vaiables
+# vaiables
 CLASSES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "lkg", "ukg"]
 CLASS_TO_NUMBER = {
     "i": "1",
@@ -84,7 +84,7 @@ DEFAULT_EVENTS = [
     "Group Dance",
     "Western Solo",
     "Quiz",
-    "Mime"
+    "Mime",
 ]
 DEFAULT_HOUSES = [
     "Red",
@@ -94,10 +94,10 @@ DEFAULT_HOUSES = [
 ]
 DEFAULT_PARAMETERS = {
     "number_of_categories": 5,
-    "number_of_judges" : 3,
-    "max_marks" : 10,
-    "max_number_of_event_participation" : 5,
-    "events":DEFAULT_EVENTS,
+    "number_of_judges": 3,
+    "max_marks": 10,
+    "max_number_of_event_participation": 5,
+    "events": DEFAULT_EVENTS,
     "houses": DEFAULT_HOUSES,
 }
 DEFAULT_USERSDATA = {

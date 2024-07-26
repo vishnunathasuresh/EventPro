@@ -1,42 +1,47 @@
 import os
-import sqlite3 
+import sqlite3
 from backend.constants import DATABASE_DIRECTORY_PATH, DATABASE_EXTENSION
-from backend.data_processing import process_grade_marks, process_student_data_from, get_class_category_dict_from
+from backend.data_processing import (
+    process_grade_marks,
+    process_student_data_from,
+    get_class_category_dict_from,
+)
 from backend.file_operations import get_current_database_path, get_houses
 from datetime import datetime
 from components.messages import show_error_message, show_general_message
-from components.navigation import go_to_home_page 
+from components.navigation import go_to_home_page
 
 
 class SQliteConnectCursor:
-    def __init__(self, file_path= get_current_database_path()) -> None:
-        self.file_path = file_path   
+    def __init__(self, file_path=get_current_database_path()) -> None:
+        self.file_path = file_path
         self.connection = sqlite3.connect(database=self.file_path)
 
     def __enter__(self):
         cursor = self.connection.cursor()
         return cursor
-    
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.connection.commit()
         self.connection.close()
 
+
 class SQliteConnectConnection:
     def __init__(self, file_path=get_current_database_path()) -> None:
-        self.file_path = file_path   
+        self.file_path = file_path
         self.connection = sqlite3.connect(database=self.file_path)
 
     def __enter__(self):
         return self.connection
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.connection.commit()
         self.connection.close()
 
+
 class DatabaseEngine:
     def __init__(
-        self, 
+        self,
         database_name,
         number_of_judges,
         max_marks_for_each_judge,
@@ -45,27 +50,36 @@ class DatabaseEngine:
         grades,
         max_number_of_events,
         edited_class_category_dataframe,
-        uploaded_csv
+        uploaded_csv,
     ):
-            
         self.current_year = datetime.now().year
         self.database_name = database_name
         self.number_of_judges = number_of_judges
         self.max_marks_for_each_judge = max_marks_for_each_judge
         self.min_marks_for_prize = min_marks_for_prize
 
-        self.available_events = list(set([event.title() for event in available_events_["Event"]]))
+        self.available_events = list(
+            set([event.title() for event in available_events_["Event"]])
+        )
         self.available_events = [(event,) for event in self.available_events]
 
-        self.grades_min_marks =process_grade_marks(grades)
+        self.grades_min_marks = process_grade_marks(grades)
 
-        self.class_category_dict = get_class_category_dict_from(edited_class_category_dataframe)
+        self.class_category_dict = get_class_category_dict_from(
+            edited_class_category_dataframe
+        )
 
         self.max_number_of_events = max_number_of_events
         self.uploaded_csv = uploaded_csv
 
-        self.student_data = process_student_data_from(self.uploaded_csv, self.class_category_dict)
-        self.database_file_path = DATABASE_DIRECTORY_PATH+f"{database_name}-{self.current_year}"+ DATABASE_EXTENSION
+        self.student_data = process_student_data_from(
+            self.uploaded_csv, self.class_category_dict
+        )
+        self.database_file_path = (
+            DATABASE_DIRECTORY_PATH
+            + f"{database_name}-{self.current_year}"
+            + DATABASE_EXTENSION
+        )
 
     def create_database(self):
         try:
@@ -108,7 +122,7 @@ class DatabaseEngine:
             cursor.execute(query1)
             student_data = list(set(self.student_data))
             cursor.executemany(query2, student_data)
-            
+
     def create_participant_table(self):
         with SQliteConnectCursor(self.database_file_path) as cursor:
             query1 = f"""
@@ -135,7 +149,7 @@ class DatabaseEngine:
             CREATE TABLE EVENT_NAME (EVENT_NAME TEXT)
             ;
             """
-            query2 ="""
+            query2 = """
             --sql
             INSERT INTO EVENT_NAME VALUES (?)
             ;
@@ -165,16 +179,17 @@ class DatabaseEngine:
             """
             cursor.execute(query1)
             cursor.execute(
-                query2, 
+                query2,
                 (
                     f"{self.database_name}-{self.current_year}.eventpro.db",
-                    self.number_of_judges, 
+                    self.number_of_judges,
                     self.max_marks_for_each_judge,
                     self.min_marks_for_prize,
                     self.max_marks_for_each_judge * self.number_of_judges,
                     False,
-                    self.max_number_of_events
-                ))
+                    self.max_number_of_events,
+                ),
+            )
 
     def create_class_category_table(self):
         with SQliteConnectCursor(self.database_file_path) as cursor:
@@ -204,7 +219,7 @@ class DatabaseEngine:
             )
             ;
             """
-            query2 ="""
+            query2 = """
             --sql
             INSERT INTO GRADE_MARKS VALUES (?, ?)
             ;
@@ -226,4 +241,3 @@ class DatabaseEngine:
             """
             cursor.execute(query1)
             cursor.executemany(query2, get_houses())
-
