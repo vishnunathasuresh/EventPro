@@ -1,6 +1,7 @@
-from pandas import read_sql
+from pandas import DataFrame, read_sql
 from backend.file_operations import get_current_database_path
 from backend.sqlite_connections import SQliteConnectCursor, SQliteConnectConnection
+from components.messages import show_error_message, show_success_message
 
 
 class DatabaseFetch:
@@ -248,3 +249,88 @@ class DatabaseFetchDataframe:
             """
             data = read_sql(query, conn, params=(category, event))
             return data
+
+
+class ParameterUpdator:
+    def __init__(self) -> None:
+        pass
+
+    def update_events_to_parameters(self, df: DataFrame):
+        data = df.to_dict(orient="records")
+        with SQliteConnectCursor() as cursor:
+            cursor.execute(
+                """
+                --sql
+                DELETE EVENT_NAME
+                FROM EVENT_NAME
+                ;
+                """
+            )
+            for record in data:
+                cursor.execute(
+                    """
+                    --sql
+                    INSERT INTO EVENT_NAME
+                    VALUES (?)
+                    ;
+                    """,
+                    (record["EVENT_NAME"],),
+                )
+            show_success_message("The events have been updated")
+
+    def update_grades_min_marks(self, df: DataFrame):
+        data = df.to_dict(orient="records")
+        marks = [rec["MIN_MARKS"] for rec in data]
+        if marks != sorted(marks, reverse=True):
+            show_error_message("The marks should be in descending order...")
+            return
+
+        with SQliteConnectCursor() as cursor:
+            cursor.execute(
+                """
+                --sql
+                DELETE GRADE, MIN_MARKS
+                FROM GRADE_MARKS
+                ;
+                """
+            )
+
+            for record in data:
+                cursor.execute(
+                    """
+                    --sql
+                    INSERT INTO GRADE_MARKS
+                    VALUES (?, ?)
+                    ;
+                    """,
+                    (record["GRADE"], record["MIN_MARKS"]),
+                )
+            show_success_message("The Grades have been updated.")
+
+    def update_other_parameters(
+        self,
+        max_marks_for_each_judge,
+        min_marks_for_prize,
+        total_marks,
+        max_no_of_events,
+    ):
+        with SQliteConnectCursor() as cursor:
+            cursor.execute(
+                """
+                --sql
+                UPDATE PARAMETER
+                SET 
+                MAX_MARKS_FOR_EACH_JUDGE = ?,
+                MIN_MARKS_FOR_PRIZE = ?,
+                TOTAL_MARKS = ?,
+                MAXIMUM_EVENTS_FOR_PARTICIPATION = ?
+                ;
+                """,
+                (
+                    max_marks_for_each_judge,
+                    min_marks_for_prize,
+                    total_marks,
+                    max_no_of_events,
+                ),
+            )
+        show_success_message("Parameters have been updated")

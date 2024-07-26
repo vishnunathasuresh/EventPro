@@ -1,5 +1,10 @@
+from pandas import DataFrame
 import streamlit as st
-from backend.database_reader import DatabaseFetch, DatabaseFetchDataframe
+from backend.database_reader import (
+    DatabaseFetch,
+    DatabaseFetchDataframe,
+    ParameterUpdator,
+)
 from backend.file_operations import get_current_database_name
 from components.navigation import show_go_back_to_home_in_sidebar
 from components.page_configuration_component import page_configuration
@@ -21,6 +26,8 @@ def main() -> None:
     show_database_updates()
     show_parameter_info()
     show_tables()
+    if st.session_state["user_info"]["user_type"] == "admin":
+        edit_section()
 
 
 def show_database_updates():
@@ -122,8 +129,93 @@ def show_tables():
     st.dataframe(data=available_events, use_container_width=True, hide_index=True)
 
 
+def edit_section():
+    params = fetch.get_database_specs()
+    total_marks = params[0] * params[1]
+    grades = df_fetch.get_grade_marks_df()
+    available_events = DataFrame({"Event name": fetch.get_events()})
+
+    with st.container(border=True):
+        st.subheader("Edit Parameters Section", divider=True)
+        events_tab, grade_tab, parameter_tab = st.tabs(
+            ["Edit Events", "Edit Grades", "Edit Other Parameters"]
+        )
+        with events_tab:
+            edit_events_df: DataFrame = st.data_editor(
+                data=available_events,
+                column_config={
+                    "Event name": st.column_config.TextColumn(required=True)
+                },
+                num_rows="dynamic",
+                use_container_width=True,
+                hide_index=True,
+            )
+            if not edit_events_df.equals(available_events):
+                if st.button("Update Events"):
+                    push_parameters.update_events_to_parameters(edit_events_df)
+        with grade_tab:
+            edited_grades_df: DataFrame = st.data_editor(
+                data=grades,
+                column_config={
+                    "GRADE": st.column_config.TextColumn(
+                        label="Grade", required=True, disabled=True
+                    ),
+                    "MIN_MARKS": st.column_config.NumberColumn(
+                        label="Min. Marks Required",
+                        required=True,
+                        min_value=0,
+                        max_value=total_marks,
+                        step=1,
+                    ),
+                },
+                num_rows="fixed",
+                use_container_width=True,
+                hide_index=True,
+            )
+            if not edited_grades_df.equals(grades):
+                if st.button("Update Grades"):
+                    push_parameters.update_grades_min_marks(edited_grades_df)
+        with parameter_tab:
+            max_marks_for_each_judge = st.number_input(
+                label="Maximum marks that can be awarded by a single judge",
+                min_value=10,
+                max_value=100,
+                step=1,
+                value=params[0],
+            )
+            number_of_judges = params[1]
+
+            total_marks = number_of_judges * max_marks_for_each_judge  # type:ignore
+            st.info("Total marks :" + str(total_marks), icon="✅")
+
+            min_marks_for_prize = st.number_input(
+                label="The Minimum marks to secure a prize **(inclusive)**",
+                min_value=1,
+                max_value=total_marks,
+                step=1,
+                value=params[2],
+            )
+
+            max_no_of_events = st.number_input(
+                label="Maximum number of events a participant can participate in",
+                min_value=1,
+                max_value=total_marks,
+                step=1,
+                value=params[3],
+            )
+
+            if st.button("Update Parameters"):
+                push_parameters.update_other_parameters(
+                    max_marks_for_each_judge=max_marks_for_each_judge,
+                    total_marks=total_marks,
+                    min_marks_for_prize=min_marks_for_prize,
+                    max_no_of_events=max_no_of_events,
+                )
+
+
 fetch = DatabaseFetch()
 df_fetch = DatabaseFetchDataframe()
+push_parameters = ParameterUpdator()
 
 if __name__ == "__main__":
     main()
