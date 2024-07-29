@@ -83,7 +83,7 @@ def main() -> None:
 
             submit_judgement = st.button(
                 "Submit Changes",
-                disabled=disabled_submit_judgement_condition, # type: ignore
+                disabled=disabled_submit_judgement_condition,  # type: ignore
                 type="primary",  # type:ignore
             )
 
