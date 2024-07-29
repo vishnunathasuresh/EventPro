@@ -1,8 +1,8 @@
 from io import StringIO
 from csv import reader as csv_reader
-from backend.constants import *
 from streamlit import session_state
 import pandas as pd
+from backend.constants import CLASS_TO_NUMBER
 
 
 def get_class_and_division(word: str):

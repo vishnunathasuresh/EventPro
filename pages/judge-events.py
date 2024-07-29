@@ -1,4 +1,3 @@
-from altair import Axis
 import streamlit as st
 from streamlit import session_state
 from pandas import DataFrame, read_sql

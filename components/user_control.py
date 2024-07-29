@@ -1,6 +1,6 @@
 import streamlit as st
-from backend.constants import *
 from streamlit_authenticator import Authenticate
+from backend.constants import AVATARS, COOKIE_EXPIRY_DAYS
 from backend.file_operations import get_usersdata
 from random import choice
 

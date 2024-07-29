@@ -7,11 +7,19 @@ from backend.file_operations import (
     get_current_database_name,
     get_saved_databases,
 )
-from components.navigation import *
-from components.messages import *
-from components.page_configuration_component import *
-from components.user_control import *
-from backend.constants import *
+from components.messages import (
+    show_error_message,
+    show_general_message,
+    show_success_message,
+)
+from components.navigation import (
+    get_authenticated_no_database_pages,
+    get_authenticated_pages_database_present,
+    get_unauthenticated_pages,
+)
+from components.page_configuration_component import page_configuration
+from components.user_control import Authenticator
+
 
 page_configuration(icon="⚡", title="EventPro")
 

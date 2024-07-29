@@ -1,8 +1,6 @@
-import xlsxwriter as xl
-import pandas as pd
 from pandas import read_sql
 import os, shutil
-from backend.constants import REPORTS_PATH, RESULTS_PATH
+from backend.constants import REPORTS_PATH
 from backend.data_processing import get_judge_labels
 from backend.excel_writer import ExcelDataframeWriter
 from backend.sqlite_connections import SQliteConnectConnection, SQliteConnectCursor

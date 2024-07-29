@@ -1,6 +1,5 @@
 import streamlit as st
 from streamlit import session_state
-from backend.constants import *
 from backend.database_reader import DatabaseFetch
 from backend.data_processing import add_to_session_state
 from backend.submit_functions import submit_student_details_to_participant_table

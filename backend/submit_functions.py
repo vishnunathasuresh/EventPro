@@ -1,8 +1,8 @@
 from time import sleep
 from pandas import DataFrame
 import streamlit as st
-from backend.database_reader import *
-from backend.sqlite_connections import *
+from backend.file_operations import get_current_database_path
+from backend.sqlite_connections import SQliteConnectCursor
 from components.messages import show_success_message
 
 
