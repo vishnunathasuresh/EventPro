@@ -50,13 +50,13 @@ def show_report_generation_content():
     submit_and_create_reports = st.button(label="Create Reports", type="primary")
     if submit_and_create_reports:
         with st.spinner(
-            "Reports are being generated... Do not press any key... Please Wait"
+            "*Reports are being generated... Do not press any key... Please Wait*"
         ):
             disabled_condition = True
             report_generator = ReportGenerator(
                 category_based_report_needed, judgement_sheet_needed
             )
-            report_generator.generate()
+            report_generator.generate_reports()
         st.toast("Reports generated successfully", icon="✅")
         disabled_condition = False
 

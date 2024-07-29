@@ -13,11 +13,11 @@ from components.page_configuration_component import *
 from components.user_control import *
 from backend.constants import *
 
-page_configuration(icon="🏡", title="Home")
+page_configuration(icon="⚡", title="EventPro")
 
 
 def main():
-    st.title("🏡 EventPro Home")
+    st.title("⚡ EventPro Home")
     st.divider()
 
     auth = Authenticator()
