@@ -7,6 +7,7 @@ IMAGES_DIRECTORY_PATH = "./assets/"
 REPORTS_PATH = "./reports/"
 RESULTS_PATH = "./results/"
 CHAT_FILE = "chat.data"
+CERTIFICATES_PATH = "./certificates/"
 
 # vaiables
 CLASSES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "lkg", "ukg"]

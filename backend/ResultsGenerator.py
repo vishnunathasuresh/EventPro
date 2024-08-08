@@ -1,12 +1,18 @@
-import os
+from io import BytesIO
+import os 
 import shutil
 from pandas import read_sql
-from backend.constants import RESULTS_PATH
+from backend.constants import CERTIFICATES_PATH, CLASS_TO_NUMBER, RESULTS_PATH
 from backend.data_processing import get_judge_labels
 from backend.sqlite_connections import SQliteConnectConnection, SQliteConnectCursor
+from datetime import datetime
+import PIL.Image
+import PIL.ImageFont
+import PIL.ImageDraw
 
+from components.messages import show_arrow_message
 
-class ResultGenerator:
+class ResultsGenerator:
     def __init__(self) -> None:
         self.categories = self.__get_distinct_category_from_participants()
         self.category_events = self.__get_category_event_dictionary()
@@ -142,7 +148,7 @@ class ResultGenerator:
 
                 for event in self.category_events[category]:
                     if gen_all_certificates:
-                        self.certificateMaker.create_certificates(conn, category, event)
+                        self.certificateMaker.generate(category, event)
 
                     self.__create_event_report(conn, event, category)
                     os.makedirs(
@@ -153,39 +159,162 @@ class ResultGenerator:
 
 class CertificateGenerator:
     def __init__(self) -> None:
-        pass
+        self.name_coordinates = (436, 555)
+        self.class_division_coordinates = (1230,555)
+        self.category_event_coordinates = (130, 710)
+        self.date_coordinates = (1190, 900)
+        self.prize_coordinates = (475, 630)
+        self.color = "black"
 
     def get_template_file(self):
         """
         Generates an image that is white with name, class-division, category-event, prize and date in a fixed place.
 
         """
-        pass
+        certificate = self.create_certificate(
+            name="Leonardo Da Vinci",
+            class_division="XII-D",
+            category_event="Category5 - Painting",
+            prize="First Prize",
+            date=self.date()
+        )
+        with BytesIO() as buf:
+            certificate.save(buf, format="PNG")
+            img_bytes = buf.getvalue()
+        return img_bytes
+        
+    @staticmethod
+    def class_division(class_, division):
+        for key in CLASS_TO_NUMBER:
+            if CLASS_TO_NUMBER[key] == class_:
+                return f"{key.upper()} - {division}"
 
-    def __fetch_ranked_participants(self, conn, category, event_name):
-        return [
-            {
-                "name": None,
-                "class-division": None,
-                "category-event": None,
-                "prize": None,
-                "date": None,
-            }
-        ]
+    @staticmethod
+    def category_event(category:str, event_name:str):
+        return f"{category.title()} - {event_name.title()}"
 
-    def create_certificates(self, conn, category, event_name):
+    @staticmethod
+    def prize(prize:str):
+        return prize.title() + " Prize"
+
+    @staticmethod
+    def date():
+        now=datetime.now() 
+        formatted_date = now.strftime("%d-%m-%Y")
+        return formatted_date
+    
+    @staticmethod
+    def time():
+        now = datetime.now()
+        formatted_time = now.strftime("%H:%M")
+        return formatted_time
+
+    def fetch_ranked_df(self, category, event_name):
+        with SQliteConnectConnection() as conn:
+            query = """
+            --sql
+            SELECT STUDENT_NAME, CLASS, DIVISION, CATEGORY, EVENT_NAME, RANK
+            FROM STUDENT, PARTICIPANT
+            WHERE STUDENT.ADMISSION_NUMBER = PARTICIPANT.ADMISSION_NUMBER
+            AND CATEGORY = ?
+            AND EVENT_NAME = ?
+            AND RANK IS NOT NULL
+            ;
+                """
+            df = read_sql(query, conn, params=(category, event_name))
+        
+        return df
+
+    def fetch_ranked_participants(self, category, event_name):
+        final_data = []
+        with SQliteConnectCursor() as cursor:
+            cursor.execute(
+                """
+                --sql
+                SELECT STUDENT_NAME, CLASS, DIVISION, CATEGORY, EVENT_NAME, RANK
+                FROM STUDENT, PARTICIPANT
+                WHERE STUDENT.ADMISSION_NUMBER = PARTICIPANT.ADMISSION_NUMBER
+                AND CATEGORY = ?
+                AND EVENT_NAME = ?
+                AND RANK IS NOT NULL
+                ;
+                """,
+                (category, event_name)
+            )
+            fetched_data = cursor.fetchall()
+            for rec in fetched_data:
+                final_data.append(
+                    {
+                        "name": rec[0],
+                        "class-division": self.class_division(rec[1], rec[2]),
+                        "category-event": self.category_event(rec[3], rec[4]),
+                        "prize": self.prize(rec[5]),
+                        "date": self.date(),
+                        "time": self.time()
+                    }
+                )
+
+        return final_data
+
+    def generate(self, category:str, event_name:str):
         """
         Generates the certificates for respective events
         """
-        records = self.__fetch_ranked_participants(conn, category, event_name)
+        records = self.fetch_ranked_participants( category, event_name)
+        certificates_event_path = CERTIFICATES_PATH + category.title() + "/"+ event_name.title()
+        shutil.rmtree(certificates_event_path, ignore_errors=True)
+        os.makedirs(certificates_event_path, exist_ok=True)
         for rec in records:
             name = rec["name"]
             class_division = rec["class-division"]
             category_event = rec["category-event"]
             prize = rec["prize"]
             date = rec["date"]
+            loc = ""
+            self.create_certificate(name, class_division, category_event, prize, date, loc)
+        else:
+            show_arrow_message(f"Created Certificates")
 
-        pass
+    def create_certificate(self, name:str, class_division:str, category_event:str, prize:str, date:str, location:str|None = None):
+        image = PIL.Image.open("./assets/white-sheet.png")
+        draw = PIL.ImageDraw.Draw(image)
+        fontname = PIL.ImageFont.truetype(font="./assets/print-font.ttf", size=34)
+        fontprize_small = PIL.ImageFont.truetype(font="./assets/print-font.ttf", size=30)
+        fontprize = PIL.ImageFont.truetype(font="./assets/print-font.ttf", size=35)
 
-    def print_certificate(self, certificate_file):
-        pass
+        color = "black"
+
+        # name-of-the-student
+        draw.text(
+            xy=self.name_coordinates, text=name.title(), font=fontname, fill=color, stroke_width=0
+        )
+
+        # class-division-of-the-student
+        draw.text(
+            xy=self.class_division_coordinates,
+            text=class_division.upper(),
+            font=fontprize,
+            fill=color,
+            stroke_width=0,
+        )
+
+        # prize-of-the-student
+        draw.text(
+        xy=self.prize_coordinates, text=prize.title(), font=fontprize, fill=color, stroke_width=0
+        )
+
+        # category-event-of-the-student
+        draw.text(
+            xy=self.category_event_coordinates, text=category_event.title(), font=fontprize_small, fill=color, stroke_width=0
+        )
+
+        # date-of-the-event
+        draw.text(xy=self.date_coordinates, text=date, font=fontprize_small, fill=color, stroke_width=0)
+
+        # save-image
+        if location:
+            image.save(location)
+        
+        return image
+
+        
