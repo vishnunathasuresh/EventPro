@@ -106,7 +106,7 @@ class ReportGenerator:
         CLASS as "Class", 
         DIVISION as "Division", 
         HOUSE as "House", 
-        EVENT_NAME as "Event Name",
+        EVENT_NAME as "Event Name"
         FROM STUDENT, PARTICIPANT
         WHERE STUDENT.ADMISSION_NUMBER = PARTICIPANT.ADMISSION_NUMBER
         AND CATEGORY = ?
