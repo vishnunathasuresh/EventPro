@@ -160,9 +160,9 @@ class ResultsGenerator:
 class CertificateGenerator:
     def __init__(self) -> None:
         self.name_coordinates = (436, 555)
-        self.class_division_coordinates = (1230,555)
+        self.class_division_coordinates = (1250,555)
         self.category_event_coordinates = (130, 710)
-        self.date_coordinates = (1190, 900)
+        self.date_coordinates = (1200, 900)
         self.prize_coordinates = (475, 630)
         self.color = "black"
 
@@ -270,7 +270,7 @@ class CertificateGenerator:
             category_event = rec["category-event"]
             prize = rec["prize"]
             date = rec["date"]
-            loc = ""
+            loc = certificates_event_path + f"/{category_event} - {prize} - {name}.png"
             self.create_certificate(name, class_division, category_event, prize, date, loc)
         else:
             show_arrow_message(f"Created Certificates")
@@ -278,9 +278,9 @@ class CertificateGenerator:
     def create_certificate(self, name:str, class_division:str, category_event:str, prize:str, date:str, location:str|None = None):
         image = PIL.Image.open("./assets/white-sheet.png")
         draw = PIL.ImageDraw.Draw(image)
-        fontname = PIL.ImageFont.truetype(font="./assets/print-font.ttf", size=34)
-        fontprize_small = PIL.ImageFont.truetype(font="./assets/print-font.ttf", size=30)
-        fontprize = PIL.ImageFont.truetype(font="./assets/print-font.ttf", size=35)
+        fontname = PIL.ImageFont.truetype(font="./assets/kalam.ttf", size=36)
+        fontprize_small = PIL.ImageFont.truetype(font="./assets/kalam.ttf", size=32)
+        fontprize = PIL.ImageFont.truetype(font="./assets/kalam.ttf", size=37)
 
         color = "black"
 
