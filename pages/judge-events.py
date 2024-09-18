@@ -76,18 +76,13 @@ def main() -> None:
                 height=TABLE_MAX_HEIGHT,
             )
 
-            disabled_submit_judgement_condition = (
-                edited_df[edited_df["DISQUALIFIED"] == False].isnull().values.any()
-            )
-
             submit_judgement = st.button(
                 "Submit Changes",
-                disabled=disabled_submit_judgement_condition,  # type: ignore
                 type="primary",  # type:ignore
             )
 
             if submit_judgement:
-                push_judgement_to_participant_table(processed_dataframe, JUDGELABELS)
+                push_judgement_to_participant_table(processed_dataframe, JUDGELABELS, event_selected)
 
 
 def get_column_info():
