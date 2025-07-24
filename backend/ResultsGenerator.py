@@ -284,9 +284,9 @@ class CertificateGenerator:
     def create_certificate(self, name:str, class_division:str, category_event:str, prize:str, date:str, location:str|None = None):
         image = PIL.Image.open("./assets/white-sheet.png")
         draw = PIL.ImageDraw.Draw(image)
-        fontmedium = PIL.ImageFont.truetype(font="./assets/kalam.ttf", size=info.get("font", {}).get("medium", 36))
-        fontsmall = PIL.ImageFont.truetype(font="./assets/kalam.ttf", size=info.get("font", {}).get("small", 32))
-        fontbig = PIL.ImageFont.truetype(font="./assets/kalam.ttf", size=info.get("font", {}).get("big", 37))
+        fontmedium = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("medium", 36))
+        fontsmall = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("small", 32))
+        fontbig = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("big", 37))
 
         color = "black"
 
