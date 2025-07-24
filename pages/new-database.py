@@ -75,7 +75,12 @@ def main() -> None:
         events_table_column_info = {
             "event": column_config.TextColumn(
                 label="Event", required=True, validate="^[a-zA-Z]+$"
-            )
+            ),
+            "group_event": column_config.CheckboxColumn(
+                label="Group Event",
+                help="Check if the event is a group event.",
+                default=False,
+            ),
         }
         max_number_of_events = st.number_input(
             "Enter the number of events a student can participate in",

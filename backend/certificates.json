@@ -1,0 +1,30 @@
+{
+    "sample-certificate": "./assets/white-sheet.png",
+    "font": {
+        "ttf": "./assets/kalam.ttf",
+        "big" : 37,
+        "medium": 36,
+        "small": 32
+    },
+    "font-color": "black",
+    "name": {
+        "coordinates": [436, 555],
+        "size": "medium"
+    },
+    "class-division": {
+        "coordinates": [1250, 555],
+        "size": "big"
+    },
+    "category-event": {
+        "coordinates": [130, 710],
+        "size": "medium"
+    },
+    "date": {
+        "coordinates": [1200, 900],
+        "size": "medium"
+    },
+    "prize": {
+        "coordinates": [475, 630],
+        "size": "medium"
+    }
+}

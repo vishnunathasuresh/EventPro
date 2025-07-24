@@ -74,6 +74,7 @@ class ReportGenerator:
         with SQliteConnectConnection() as conn:
             for category in self.category_events:
                 os.makedirs(REPORTS_PATH + category.title(), exist_ok=True)
+                self.create_event_participant_count_report(conn, category)
 
                 if self.category_based_report_needed:
                     self.create_category_reports(conn, category)
@@ -82,6 +83,26 @@ class ReportGenerator:
                     self.create_judgement_sheets(conn, category)
 
                 self.create_event_reports(conn, category)
+    
+    def create_event_participant_count_report(self, conn, category):
+        query = """
+        --sql
+        SELECT EVENT_NAME, COUNT(PARTICIPANT.ADMISSION_NUMBER) AS "Participant Count"
+        FROM PARTICIPANT, STUDENT
+        WHERE STUDENT.ADMISSION_NUMBER = PARTICIPANT.ADMISSION_NUMBER
+        GROUP BY EVENT_NAME
+        ORDER BY EVENT_NAME ASC;
+        """
+        event_participant_count_path = REPORTS_PATH + category.title() + "/Event Participant Count.xlsx"
+        os.makedirs(os.path.dirname(event_participant_count_path), exist_ok=True)
+        df = read_sql(query, conn)
+        
+        with ExcelDataframeWriter(event_participant_count_path) as xl_obj:
+            xl_obj.generate_doc(
+                df,
+                category.title(),
+                "Event Participant Count - " + category.title(),
+            )
 
     def create_category_reports(self, conn, category):
         q1 = """

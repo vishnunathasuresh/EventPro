@@ -46,6 +46,15 @@ def get_authenticated_pages_database_present():
                 )
 
                 st.page_link(
+                    label="Group Judgement",
+                    page="./pages/group-judge-events.py",
+                    icon="🎯",
+                    disabled=USERTYPE != ADMIN,
+                    help="Judge events that have occured.",
+                    use_container_width=True,
+                )
+
+                st.page_link(
                     label="Results and Certificates",
                     page="./pages/results-and-certificates-generator.py",
                     icon="🎖️",

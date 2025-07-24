@@ -18,10 +18,9 @@ def main() -> None:
 
 WORDS = """
 - ***Version 1.0.0 of EventPro***
-- ***Built and completed in 2024-25.***
-- ***Last Update : July 2024***
+- ***Built and completed in 2025.***
 - ***Name :- Vishnunath A Suresh***
-- ***Github Username : Vishnunath-A-Suresh***
+- ***Github Username : vishnunathasuresh***
 """
 
 if __name__ == "__main__":
