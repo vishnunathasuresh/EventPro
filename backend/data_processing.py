@@ -1,6 +1,7 @@
 from io import StringIO
 from csv import reader as csv_reader
 from streamlit import session_state
+import streamlit as st
 import pandas as pd
 from backend.constants import CLASS_TO_NUMBER
 
@@ -44,10 +45,11 @@ def process_student_data_from(csv_data, class_category_dict):
                 student_data.append(
                     (admn_no, name.title(), class_, division.upper(), None, category)
                 )
-                admn_nos = admn_nos = (admn_no,)
+                st.toast(f"Added student: {admn_no}, {name}, {class_}, {division}, {category}")
+                admn_nos = (admn_no,)
         return student_data
-    except:
-        raise SyntaxError("The csv file does not meet the syntax required.")
+    except Exception as e:
+        st.text(f"Error processing student data: {e}")
 
 
 def get_judge_labels(judge_no):

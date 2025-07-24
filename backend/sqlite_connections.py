@@ -63,15 +63,7 @@ class DatabaseEngine:
         )
 
         self.available_events = [(event,) for event in self.available_events]
-        self.group_events:list[tuple] = list(
-            set(
-                [
-                    (event,)
-                    for event in available_events_["Event"]
-                    if available_events_["Group Event"][available_events_["Event"] == event].any()
-                ]
-            )
-        )
+        
 
         self.grades_min_marks = process_grade_marks(grades)
 
@@ -96,13 +88,14 @@ class DatabaseEngine:
             if os.path.exists(self.database_file_path):
                 os.remove(path=self.database_file_path)
 
-            self.create_student_table()
+            
             self.create_participant_table()
             self.create_event_name_table()
             self.create_parameter_table()
             self.create_class_category_table()
             self.create_grade_marks_table()
             self.create_house_table()
+            self.create_student_table()
 
             show_general_message("Database Created Successfully!")
             go_to_home_page()
@@ -167,20 +160,7 @@ class DatabaseEngine:
             cursor.execute(query1)
             cursor.executemany(query2, self.available_events)
     
-    def create_group_event_name_table(self):
-        with SQliteConnectCursor(self.database_file_path) as cursor:
-            query1 = """
-            --sql
-            CREATE TABLE GROUP_EVENT_NAME (EVENT_NAME TEXT)
-            ;
-            """
-            query2 = """
-            --sql
-            INSERT INTO GROUP_EVENT_NAME VALUES (?)
-            ;
-            """
-            cursor.execute(query1)
-            cursor.executemany(query2, self.group_events)
+
 
     def create_parameter_table(self):
         with SQliteConnectCursor(self.database_file_path) as cursor:
