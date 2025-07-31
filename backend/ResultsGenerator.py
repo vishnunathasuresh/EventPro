@@ -2,6 +2,7 @@ from io import BytesIO
 from math import inf
 import os 
 import shutil
+from turtle import width
 from altair import Config
 from pandas import read_sql
 from backend.constants import CERTIFICATES_PATH, CLASS_TO_NUMBER, RESULTS_PATH
@@ -19,9 +20,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 info = CONFIG
 
-config = Config(**info)
-
-info = Config(**info)
 
 class ResultsGenerator:
     def __init__(self) -> None:
@@ -285,42 +283,152 @@ class CertificateGenerator:
             self.create_certificate(name, class_division, category_event, prize, date, loc)
         else:
             show_arrow_message(f"Created Certificates")
+    
 
-    def create_certificate(self, name:str, class_division:str, category_event:str, prize:str, date:str, location:str|None = None):
-        image = PIL.Image.open(info.get("sample-certificate", "./assets/certificate.png"))
+    
+    def draw_text(self, image:PIL.Image.Image, name:str, class_division:str, category_event:str, prize:str, date:str):
+        """
+        Draws the text on the image
+        """
         draw = PIL.ImageDraw.Draw(image)
-        fontmedium = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("medium", 36))
-        fontsmall = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("small", 32))
-        fontbig = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("big", 37))
+        name_font_size = info.get("name", {}).get("height", 30)
+        class_division_font_size = info.get("class-division", {}).get("height", 30)
+        category_event_font_size = info.get("category-event", {}).get("height", 30)
+        prize_font_size = info.get("prize", {}).get("height", 30)
+        date_font_size = info.get("date", {}).get("height", 30)
 
-        color = "black"
-
+        name_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=name_font_size
+        ) 
+        class_division_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=class_division_font_size
+        )
+        category_event_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=category_event_font_size
+        )
+        prize_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=prize_font_size
+        )
+        date_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=date_font_size
+        )
+        color = info.get("font-color", "black")
         # name-of-the-student
         draw.text(
-            xy=self.name_coordinates, text=name.title(), font=fontmedium, fill=color, stroke_width=0
+            xy=self.name_coordinates, text=name.title(), font=name_font, fill=color, stroke_width=0
         )
 
         # class-division-of-the-student
         draw.text(
             xy=self.class_division_coordinates,
             text=class_division.upper(),
-            font=fontbig,
+            font=class_division_font,
             fill=color,
             stroke_width=0,
         )
 
         # prize-of-the-student
         draw.text(
-        xy=self.prize_coordinates, text=prize.title(), font=fontbig, fill=color, stroke_width=0
+            xy=self.prize_coordinates, text=prize.title(), font=prize_font, fill=color, stroke_width=0
         )
 
         # category-event-of-the-student
         draw.text(
-            xy=self.category_event_coordinates, text=category_event.title(), font=fontsmall, fill=color, stroke_width=0
+            xy=self.category_event_coordinates, text=category_event.title(), font=category_event_font, fill=color, stroke_width=0
         )
 
         # date-of-the-event
-        draw.text(xy=self.date_coordinates, text=date, font=fontsmall, fill=color, stroke_width=0)
+        draw.text(xy=self.date_coordinates, text=date, font=date_font, fill=color, stroke_width=0)
+
+    def get_template_certificate(self):
+        """
+        Generates an image that is white with name, class-division, category-event, prize and date in a fixed place.
+        """
+        image = PIL.Image.open(info.get("sample-certificate", "./assets/certificate.png"))
+        self.draw_text(
+            image,
+            name="Leonardo Da Vinci",
+            class_division="XII-D",
+            category_event="Category5 - Painting",
+            prize="First Prize",
+            date=self.date()
+        )
+        return image
+
+    def create_certificate(self, name:str, class_division:str, category_event:str, prize:str, date:str, location:str|None = None):
+        
+        if not os.path.exists("./.internals/whitesheet.png"):
+            image = PIL.Image.open(info.get("sample-certificate", "./assets/certificate.png"))
+            width, height = image.size
+            # Create a white image if it doesn't exist
+            white_image = PIL.Image.new("RGB", (width, height), "white")
+            white_image.save("./.internals/whitesheet.png")
+        image = PIL.Image.open("./.internals/whitesheet.png")
+        draw = PIL.ImageDraw.Draw(image)
+        fontmedium = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("medium", 36))
+        fontsmall = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("small", 32))
+        fontbig = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("big", 37))
+        name_font_size = info.get("name", {}).get("height", 30)
+        class_division_font_size = info.get("class-division", {}).get("height", 30)
+        category_event_font_size = info.get("category-event", {}).get("height", 30)
+        prize_font_size = info.get("prize", {}).get("height", 30)
+        date_font_size = info.get("date", {}).get("height", 30)
+
+        name_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=name_font_size
+        )
+        class_division_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=class_division_font_size
+        )
+        category_event_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=category_event_font_size
+        )
+        prize_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=prize_font_size
+        )
+        date_font = PIL.ImageFont.truetype(
+            font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"),
+            size=date_font_size
+        )
+
+
+        color = info.get("font-color", "black")
+
+        # name-of-the-student
+        draw.text(
+            xy=self.name_coordinates, text=name.title(), font=name_font, fill=color, stroke_width=0
+        )
+
+        # class-division-of-the-student
+        draw.text(
+            xy=self.class_division_coordinates,
+            text=class_division.upper(),
+            font=class_division_font,
+            fill=color,
+            stroke_width=0,
+        )
+
+        # prize-of-the-student
+        draw.text(
+            xy=self.prize_coordinates, text=prize.title(), font=prize_font, fill=color, stroke_width=0
+        )
+
+        # category-event-of-the-student
+        draw.text(
+            xy=self.category_event_coordinates, text=category_event.title(), font=category_event_font, fill=color, stroke_width=0
+        )
+
+        # date-of-the-event
+        draw.text(xy=self.date_coordinates, text=date, font=date_font, fill=color, stroke_width=0)
 
         # save-image
         if location:

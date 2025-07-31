@@ -18,7 +18,7 @@ CONFIG = {
         "height": 90
     },
     "category-event": {
-        "coordinates": [300, 1410],
+        "coordinates": [300, 1400],
         "size": "big",
         "height": 90
     },

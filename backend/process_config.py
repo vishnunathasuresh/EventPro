@@ -36,11 +36,18 @@ class PrizeConfig:
     size: str
     height: int = 10
 
+@dataclass
+class FontConfig:
+    ttf: str
+    big: int
+    medium: int
+    small: int
+
 
 @dataclass
 class Config:
     sample_certificate: str
-    font: dict
+    font: FontConfig
     font_color: str
     name: NameConfig
     class_division: ClassDivisionConfig
