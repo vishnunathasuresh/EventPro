@@ -50,6 +50,7 @@ def process_student_data_from(csv_data, class_category_dict):
         return student_data
     except Exception as e:
         st.text(f"Error processing student data: {e}")
+        return []
 
 
 def get_judge_labels(judge_no):
