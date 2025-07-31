@@ -1,8 +1,8 @@
 {
-    "sample-certificate": "./assets/white-sheet.png",
+    "sample-certificate": "./assets/certificate.png",
     "font": {
         "ttf": "./assets/kalam.ttf",
-        "big" : 37,
+        "big" : 64,
         "medium": 36,
         "small": 32
     },

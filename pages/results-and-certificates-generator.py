@@ -143,6 +143,8 @@ def show_certificates():
     with st.container(border=True):
         st.subheader("🏅 Download Template", divider=True)
 
+        st.image(cert_object.get_template_file(), caption="Certificate Template")
+
         st.download_button(
             label="Download Certificate Template",
             data=cert_object.get_template_file(),

@@ -1,6 +1,8 @@
 from io import BytesIO
+from math import inf
 import os 
 import shutil
+from altair import Config
 from pandas import read_sql
 from backend.constants import CERTIFICATES_PATH, CLASS_TO_NUMBER, RESULTS_PATH
 from backend.data_processing import get_judge_labels
@@ -9,14 +11,17 @@ from datetime import datetime
 import PIL.Image
 import PIL.ImageFont
 import PIL.ImageDraw
-
 from components.messages import show_arrow_message
+import logging
+from backend.config import CONFIG
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-from json import load
-with open("./backend/certificates.json", "r") as f:
-    info: dict = load(f)
 
+info = CONFIG
 
+config = Config(**info)
+
+info = Config(**info)
 
 class ResultsGenerator:
     def __init__(self) -> None:
@@ -282,7 +287,7 @@ class CertificateGenerator:
             show_arrow_message(f"Created Certificates")
 
     def create_certificate(self, name:str, class_division:str, category_event:str, prize:str, date:str, location:str|None = None):
-        image = PIL.Image.open("./assets/white-sheet.png")
+        image = PIL.Image.open(info.get("sample-certificate", "./assets/certificate.png"))
         draw = PIL.ImageDraw.Draw(image)
         fontmedium = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("medium", 36))
         fontsmall = PIL.ImageFont.truetype(font=info.get("font", {}).get("ttf", "./assets/kalam.ttf"), size=info.get("font", {}).get("small", 32))
