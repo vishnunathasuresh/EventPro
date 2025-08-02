@@ -8,7 +8,7 @@ from backend.sqlite_connections import SQliteConnectConnection, SQliteConnectCur
 
 class ReportGenerator:
     def __init__(
-        self, category_based_report_needed: bool, judgement_sheets_needed: bool
+        self, category_based_report_needed: bool, judgement_sheets_needed: bool, prize_winners_report_needed: bool = False
     ) -> None:
         self.categories = self.__get_distinct_category_from_participants()
         self.category_events = self.__get_category_event_dictionary()
@@ -16,6 +16,7 @@ class ReportGenerator:
 
         self.category_based_report_needed = category_based_report_needed
         self.judgement_sheets_needed = judgement_sheets_needed
+        self.prize_winners_report_needed = prize_winners_report_needed
 
     def __get_distinct_category_from_participants(self) -> list[str]:
         with SQliteConnectCursor() as cursor:
@@ -78,6 +79,9 @@ class ReportGenerator:
 
                 if self.category_based_report_needed:
                     self.create_category_reports(conn, category)
+                
+                if self.prize_winners_report_needed:
+                    self.prize_winners_report(conn, category)
 
                 if self.judgement_sheets_needed:
                     self.create_judgement_sheets(conn, category)
@@ -168,7 +172,7 @@ class ReportGenerator:
                 category.title() + " - Statistics",
             )
 
-    def create_event_reports(self, conn, category: str):
+    def create_event_reports(self, conn, category: str, prize_winners: bool = False):
         events = self.__get_distinct_events_from_category(category)
         query = """
         --sql
@@ -185,9 +189,29 @@ class ReportGenerator:
         ORDER BY CLASS ASC, DIVISION ASC, STUDENT_NAME ASC
         ;
         """
-
+        q3 = """
+        --sql
+        SELECT 
+        PARTICIPANT.ADMISSION_NUMBER AS "Admn. No",
+        STUDENT_NAME AS "Name",
+        CLASS AS "Class",
+        DIVISION AS "Division",
+        HOUSE AS "House",
+        RANK AS "Rank",
+        GRADE AS "Grade",
+        TOTAL_MARKS AS "Total Marks",
+        DISQUALIFIED AS "Disqualified"
+        FROM PARTICIPANT, STUDENT
+        WHERE PARTICIPANT.ADMISSION_NUMBER = STUDENT.ADMISSION_NUMBER
+        AND EVENT_NAME = ?
+        AND CATEGORY = ?
+        ORDER BY CLASS ASC, DIVISION ASC, STUDENT_NAME ASC;
+        """#prize winners
         event_path = (
             REPORTS_PATH + category.title() + f"/{category.title()} - Event Report.xlsx"
+        )
+        prize_path = (
+            REPORTS_PATH + category.title() + f"/{category.title()} - Prize Winners.xlsx"
         )
 
         with ExcelDataframeWriter(event_path) as xl_obj:
@@ -197,6 +221,48 @@ class ReportGenerator:
                     dataframe=df,
                     sheet_title=event.strip().title(),
                     report_title=str(category + " - " + event).title(),
+                )
+                if prize_winners:
+                    df2 = read_sql(q3, conn, params=(event, category))
+                    xl_obj.generate_doc(
+                        dataframe=df2,
+                        sheet_title=event.strip().title() + " - Prize Winners",
+                        report_title=str(category + " - " + event).title() + " - Prize Winners",
+                    )
+    def prize_winners_report(self, conn, category: str):
+        query = """
+        --sql
+        SELECT 
+        PARTICIPANT.ADMISSION_NUMBER AS "Admn. No",
+        STUDENT_NAME AS "Name",
+        CLASS AS "Class",
+        DIVISION AS "Division",
+        HOUSE AS "House",
+        RANK AS "Rank",
+        GRADE AS "Grade",
+        TOTAL_MARKS AS "Total Marks",
+        DISQUALIFIED AS "Disqualified"
+        FROM PARTICIPANT, STUDENT
+        WHERE PARTICIPANT.ADMISSION_NUMBER = STUDENT.ADMISSION_NUMBER
+        AND CATEGORY = ?
+        AND EVENT_NAME = ?
+        AND RANK IN ('FIRST', 'SECOND', 'THIRD', 'CONSOLATION')
+        AND EVENT_NAME IS NOT NULL
+        ORDER BY MARKS DESC, STUDENT_NAME ASC;
+        """
+        prize_winners_path = (
+            REPORTS_PATH + category.title() + f"/{category.title()} - Prize Winners.xlsx"
+        )
+        
+        
+        
+        with ExcelDataframeWriter(prize_winners_path) as xl_obj:
+            for event in sorted(self.__get_distinct_events_from_category(category)):
+                df = read_sql(query, conn, params=(category, event))
+                xl_obj.generate_doc(
+                    dataframe=df,
+                    sheet_title=event.title() ,
+                    report_title=category.title() + " - Prize Winners"
                 )
 
     def create_judgement_sheets(self, conn, category: str):
@@ -221,12 +287,14 @@ class ReportGenerator:
         ORDER BY CLASS ASC, DIVISION ASC, STUDENT_NAME ASC
         ;
         """
+        
         judgement_sheet_path = (
             REPORTS_PATH
             + category.title()
             + "/Judgement Sheets/"
             + f"{category.title()} - Judgement Sheet.xlsx"
         )
+        
 
         with ExcelDataframeWriter(judgement_sheet_path) as xl_obj:
             for event in sorted(self.__get_distinct_events_from_category(category)):
@@ -236,3 +304,4 @@ class ReportGenerator:
                     sheet_title=event.title(),
                     report_title=f"{category.title()} - {event.title()}",
                 )
+                

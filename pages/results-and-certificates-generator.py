@@ -57,11 +57,20 @@ def show_results():
 
 def show_generate_reports():
     with st.container(border=True):
-        st.subheader("🏅 Generate Reports", divider=True)
-        if st.button("Recreate Reports"):
+        st.subheader("🏅 Generate All Reports", divider=True)
+        if st.button("Recreate all Reports"):
             with st.spinner("Recreating Reports"):
                 rep_obj.generate_reports()
                 show_success_message("Recreated Reports")
+        if st.button("Create Winners Sheets"):
+            with st.spinner("Creating Winners Sheets..."):
+                rep_obj2 = ReportGenerator(
+                    category_based_report_needed=False,
+                    judgement_sheets_needed=False,
+                    prize_winners_report_needed=True
+                )
+                rep_obj2.generate_reports()
+            show_success_message("Winners Sheets Created Successfully")
 
 
 def create_manual_certificates():
